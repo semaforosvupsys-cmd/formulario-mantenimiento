@@ -111,8 +111,15 @@ button:active {
     <label>Observaciones</label>
     <input type="text" id="observaciones">
 
-    <label>Técnico</label>
-    <input type="text" id="tecnico" required>
+    <label>Técnico responsable</label>
+<select name="tecnico" required>
+  <option value="">Seleccione el técnico</option>
+  <option value="Guanerge Salcedo">Guanerge Salcedo</option>
+  <option value="Ing. Luis Gutierrez">Luis Gutierrez</option>
+  <option value="Juan C. Bolaños">Juan Bolaños</option>
+  <option value="Jose Colmenares">Jose Colmenares</option>
+  <option value="William Orcasita">William Orcasita</option>
+</select>
 
     <label>Foto</label>
     <input type="file" id="foto" accept="image/*" capture="environment" required>
