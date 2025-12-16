@@ -111,12 +111,12 @@ button:active {
     <label>Observaciones</label>
     <input type="text" id="observaciones">
 
-    <label>Técnico responsable</label>
-<select name="tecnico" required>
+ <label>Técnico responsable</label>
+<select id="tecnico" required>
   <option value="">Seleccione el técnico</option>
   <option value="Guanerge Salcedo">Guanerge Salcedo</option>
-  <option value="Ing. Luis Gutierrez">Luis Gutierrez</option>
-  <option value="Juan C. Bolaños">Juan Bolaños</option>
+  <option value="Luis Gutierrez">Luis Gutierrez</option>
+  <option value="Juan Bolaños">Juan Bolaños</option>
   <option value="Jose Colmenares">Jose Colmenares</option>
   <option value="William Orcasita">William Orcasita</option>
 </select>
@@ -131,51 +131,30 @@ button:active {
 </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw2Jatbz6FSJESiTBk-iqwl-zrHXqa40FL-1Csbg6ZE8PnrQcaYB7pYJJAzYGozz8zl/exec";
-
-const actividades = {
-  "Lámpara": ["Cambio lámpara", "Limpieza", "Ajuste bornera"],
-  "Eléctrica": ["Breaker", "Cableado", "Acometida"],
-  "Comunicación": ["Reinicio", "Antena", "Red"],
-  "Controlador": ["Reprogramación", "Tarjeta", "Reinicio"],
-  "Estructural": ["Poste", "Anclaje", "Soldadura"]
-};
-
-document.getElementById("falla").addEventListener("change", function () {
-  const act = document.getElementById("actividad");
-  act.innerHTML = "<option value=''>Seleccione actividad</option>";
-  (actividades[this.value] || []).forEach(a => {
-    const o = document.createElement("option");
-    o.textContent = a;
-    act.appendChild(o);
-  });
-});
-
 document.getElementById("form").addEventListener("submit", function (e) {
   e.preventDefault();
 
-  const reader = new FileReader();
+  const formData = new FormData();
   const file = document.getElementById("foto").files[0];
+  const reader = new FileReader();
 
   reader.onload = () => {
 
-    const payload = {
-      fecha: fecha.value,
-      direccion: direccion.value,
-      falla: falla.value,
-      actividad: actividad.value,
-      observaciones: observaciones.value,
-      tecnico: tecnico.value,
-      foto: reader.result.split(",")[1]
-    };
+    formData.append("fecha", fecha.value);
+    formData.append("direccion", direccion.value);
+    formData.append("falla", falla.value);
+    formData.append("actividad", actividad.value);
+    formData.append("observaciones", observaciones.value);
+    formData.append("tecnico", tecnico.value);
+    formData.append("foto", reader.result);
 
     fetch(WEB_APP_URL, {
       method: "POST",
-      body: JSON.stringify(payload)
+      body: formData
     })
     .then(r => r.text())
     .then(() => {
-      msg.innerHTML = "✅ Registro guardado";
+      msg.innerHTML = "✅ Registro guardado correctamente";
       msg.style.color = "green";
       form.reset();
     })
@@ -188,6 +167,5 @@ document.getElementById("form").addEventListener("submit", function (e) {
   reader.readAsDataURL(file);
 });
 </script>
-
 </body>
 </html>
