@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Mantenimiento Semafórico</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+* {
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #0f172a;
+  padding: 15px;
+}
+
+.card {
+  background: white;
+  max-width: 420px;
+  margin: auto;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 15px 30px rgba(0,0,0,.25);
+}
+
+h1 {
+  text-align: center;
+  color: #065f46;
+  margin-bottom: 5px;
+}
+
+.sub {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+label {
+  font-weight: 600;
+  margin-top: 12px;
+  display: block;
+  color: #374151;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 16px;
+}
+
+button {
+  margin-top: 22px;
+  width: 100%;
+  padding: 14px;
+  background: #059669;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+button:active {
+  transform: scale(.98);
+}
+
+#msg {
+  margin-top: 15px;
+  text-align: center;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h1>🚦 Mantenimiento</h1>
+  <div class="sub">Registro en campo</div>
+
+  <form id="form">
+
+    <label>Fecha</label>
+    <input type="date" id="fecha" required>
+
+    <label>Intersección</label>
+    <input type="text" id="direccion" placeholder="Ej: Cra 12 con Calle 16" required>
+
+    <label>Tipo de falla</label>
+    <select id="falla" required>
+      <option value="">Seleccione</option>
+      <option>Lámpara</option>
+      <option>Eléctrica</option>
+      <option>Comunicación</option>
+      <option>Controlador</option>
+      <option>Estructural</option>
+    </select>
+
+    <label>Actividad realizada</label>
+    <select id="actividad" required>
+      <option value="">Seleccione actividad</option>
+    </select>
+
+    <label>Observaciones</label>
+    <input type="text" id="observaciones">
+
+    <label>Técnico</label>
+    <input type="text" id="tecnico" required>
+
+    <label>Foto</label>
+    <input type="file" id="foto" accept="image/*" capture="environment" required>
+
+    <button type="submit">Guardar</button>
+
+    <div id="msg"></div>
+  </form>
+</div>
+
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw2Jatbz6FSJESiTBk-iqwl-zrHXqa40FL-1Csbg6ZE8PnrQcaYB7pYJJAzYGozz8zl/exec";
+
+const actividades = {
+  "Lámpara": ["Cambio lámpara", "Limpieza", "Ajuste bornera"],
+  "Eléctrica": ["Breaker", "Cableado", "Acometida"],
+  "Comunicación": ["Reinicio", "Antena", "Red"],
+  "Controlador": ["Reprogramación", "Tarjeta", "Reinicio"],
+  "Estructural": ["Poste", "Anclaje", "Soldadura"]
+};
+
+document.getElementById("falla").addEventListener("change", function () {
+  const act = document.getElementById("actividad");
+  act.innerHTML = "<option value=''>Seleccione actividad</option>";
+  (actividades[this.value] || []).forEach(a => {
+    const o = document.createElement("option");
+    o.textContent = a;
+    act.appendChild(o);
+  });
+});
+
+document.getElementById("form").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const reader = new FileReader();
+  const file = document.getElementById("foto").files[0];
+
+  reader.onload = () => {
+
+    const payload = {
+      fecha: fecha.value,
+      direccion: direccion.value,
+      falla: falla.value,
+      actividad: actividad.value,
+      observaciones: observaciones.value,
+      tecnico: tecnico.value,
+      foto: reader.result.split(",")[1]
+    };
+
+    fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    })
+    .then(r => r.text())
+    .then(() => {
+      msg.innerHTML = "✅ Registro guardado";
+      msg.style.color = "green";
+      form.reset();
+    })
+    .catch(() => {
+      msg.innerHTML = "❌ Error al enviar";
+      msg.style.color = "red";
+    });
+  };
+
+  reader.readAsDataURL(file);
+});
+</script>
+
+</body>
+</html>
