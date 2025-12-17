@@ -29,7 +29,6 @@ body {
 h1 {
   text-align: center;
   color: #065f46;
-  margin-bottom: 5px;
 }
 
 .sub {
@@ -67,10 +66,6 @@ button {
   font-weight: bold;
 }
 
-button:active {
-  transform: scale(.98);
-}
-
 #msg {
   margin-top: 15px;
   text-align: center;
@@ -91,14 +86,13 @@ button:active {
     <input type="date" id="fecha" required>
 
     <label>Intersección</label>
-    <input type="text" id="direccion" placeholder="Ej: Cra 12 con Calle 16" required>
+    <input type="text" id="direccion" required>
 
     <label>Tipo de falla</label>
     <select id="falla" required>
       <option value="">Seleccione</option>
-      <option value="Lámpara">Lámpara</option>
-      <option value="Eléctrica">Eléctrica</option>
-      <option value="Comunicación">Comunicación</option>
+      <option value="Lampara">Lámpara</option>
+      <option value="Cableado">Cableado</option>
       <option value="Controlador">Controlador</option>
       <option value="Estructural">Estructural</option>
     </select>
@@ -113,35 +107,55 @@ button:active {
 
     <label>Técnico responsable</label>
     <select id="tecnico" required>
-      <option value="">Seleccione el técnico</option>
-      <option value="Guanerge Salcedo">Guanerge Salcedo</option>
-      <option value="Luis Gutierrez">Luis Gutierrez</option>
-      <option value="Juan Bolaños">Juan Bolaños</option>
-      <option value="Jose Colmenares">Jose Colmenares</option>
-      <option value="William Orcasita">William Orcasita</option>
+      <option value="">Seleccione</option>
+      <option>Guanerge Salcedo</option>
+      <option>Luis Gutierrez</option>
+      <option>Juan Bolaños</option>
+      <option>Jose Colmenares</option>
+      <option>William Orcasita</option>
     </select>
 
     <label>Foto</label>
     <input type="file" id="foto" accept="image/*" capture="environment" required>
 
     <button type="submit">Guardar</button>
-
     <div id="msg"></div>
+
   </form>
 </div>
 
 <script>
-/* 🔗 URL DEL WEB APP */
-const WEB_APP_URL =
-"https://script.google.com/macros/s/AKfycbwc6BiG2Syc3HA_FwA71dfiyGSjDzEeJl2YMQdKuQVRlxFrrEwULdBDp8mDFj5WjYGP/exec";
+/* 🔗 URL WEB APP */
+const WEB_APP_URL = "PEGA_AQUI_TU_URL_DEL_WEB_APP";
 
-/* 🚦 Actividades por tipo de falla */
+/* 📂 FALLAS Y ACTIVIDADES */
 const actividades = {
-  "Lámpara": ["Cambio lámpara", "Limpieza", "Ajuste bornera"],
-  "Eléctrica": ["Breaker", "Cableado", "Acometida"],
-  "Comunicación": ["Reinicio", "Antena", "Red"],
-  "Controlador": ["Reprogramación", "Tarjeta", "Reinicio"],
-  "Estructural": ["Poste", "Anclaje", "Soldadura"]
+  "Lampara": [
+    "Lámpara vehicular",
+    "Lámpara peatonal"
+  ],
+  "Cableado": [
+    "Vehicular",
+    "Peatonal",
+    "Acometida eléctrica"
+  ],
+  "Controlador": [
+    "Tarjetas",
+    "Reinicio",
+    "Breaker",
+    "Comunicación",
+    "UPS",
+    "Fusible"
+  ],
+  "Estructural": [
+    "Postes T1",
+    "Postes T2",
+    "Semáforos S1",
+    "Semáforos S2",
+    "Bases",
+    "Anclaje",
+    "Tornillos"
+  ]
 };
 
 /* 🔄 Cargar actividades */
@@ -149,15 +163,15 @@ document.getElementById("falla").addEventListener("change", function () {
   const actividad = document.getElementById("actividad");
   actividad.innerHTML = "<option value=''>Seleccione actividad</option>";
 
-  (actividades[this.value] || []).forEach(a => {
+  (actividades[this.value] || []).forEach(item => {
     const opt = document.createElement("option");
-    opt.value = a;
-    opt.textContent = a;
+    opt.value = item;
+    opt.textContent = item;
     actividad.appendChild(opt);
   });
 });
 
-/* 📤 Envío del formulario */
+/* 📤 Envío */
 document.getElementById("form").addEventListener("submit", function (e) {
   e.preventDefault();
 
@@ -173,26 +187,24 @@ document.getElementById("form").addEventListener("submit", function (e) {
       actividad: actividad.value,
       observaciones: observaciones.value,
       tecnico: tecnico.value,
-      foto: reader.result.split(",")[1] // BASE64 PURO
+      foto: reader.result.split(",")[1]
     };
 
     fetch(WEB_APP_URL, {
-  method: "POST",
-  mode: "no-cors",
-  body: JSON.stringify(payload)
+      method: "POST",
+      mode: "no-cors",
+      body: JSON.stringify(payload)
     })
-
-   .then(() => {
-  msg.innerHTML = "✅ Registro enviado correctamente";
-  msg.style.color = "green";
-  form.reset();
-  actividad.innerHTML = "<option value=''>Seleccione actividad</option>";
-})
-.catch(() => {
-  msg.innerHTML = "❌ Error de conexión";
-  msg.style.color = "red";
-});
-
+    .then(() => {
+      msg.textContent = "✅ Registro enviado";
+      msg.style.color = "green";
+      form.reset();
+      actividad.innerHTML = "<option value=''>Seleccione actividad</option>";
+    })
+    .catch(() => {
+      msg.textContent = "❌ Error al enviar";
+      msg.style.color = "red";
+    });
   };
 
   reader.readAsDataURL(file);
