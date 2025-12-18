@@ -6,209 +6,129 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-* {
-  box-sizing: border-box;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-body {
-  margin: 0;
-  background: #0f172a;
-  padding: 15px;
-}
-
-.card {
-  background: white;
-  max-width: 420px;
-  margin: auto;
-  padding: 20px;
-  border-radius: 16px;
-  box-shadow: 0 15px 30px rgba(0,0,0,.25);
-}
-
-h1 {
-  text-align: center;
-  color: #065f46;
-}
-
-.sub {
-  text-align: center;
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 20px;
-}
-
-label {
-  font-weight: 600;
-  margin-top: 12px;
-  display: block;
-  color: #374151;
-}
-
-input, select {
-  width: 100%;
-  padding: 12px;
-  margin-top: 5px;
-  border-radius: 10px;
-  border: 1px solid #d1d5db;
-  font-size: 16px;
-}
-
-button {
-  margin-top: 22px;
-  width: 100%;
-  padding: 14px;
-  background: #059669;
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-#msg {
-  margin-top: 15px;
-  text-align: center;
-  font-weight: bold;
-}
+body{background:#0f172a;padding:15px;font-family:system-ui}
+.card{background:white;max-width:420px;margin:auto;padding:20px;border-radius:16px}
+label{font-weight:600;margin-top:12px;display:block}
+input,select,button{width:100%;padding:12px;margin-top:6px;border-radius:10px}
+button{background:#059669;color:white;font-weight:bold;border:none}
+#msg{text-align:center;margin-top:10px;font-weight:bold}
 </style>
 </head>
 
 <body>
-
 <div class="card">
-  <h1>🚦 Mantenimiento</h1>
-  <div class="sub">Registro en campo</div>
+<h2>🚦 Registro Mantenimiento</h2>
 
-  <form id="form">
+<form id="form">
 
-    <label>Fecha</label>
-    <input type="date" id="fecha" required>
+<label>Fecha</label>
+<input type="date" id="fecha" required>
 
-    <label>Intersección</label>
-    <input type="text" id="direccion" required>
+<label>Intersección</label>
+<input type="text" id="direccion" required>
 
-    <label>Tipo de falla</label>
-    <select id="falla" required>
-      <option value="">Seleccione</option>
-      <option value="Lampara">Lámpara</option>
-      <option value="Cableado">Cableado</option>
-      <option value="Controlador">Controlador</option>
-      <option value="Estructural">Estructural</option>
-    </select>
+<label>Tipo de falla</label>
+<select id="falla" required>
+<option value="">Seleccione</option>
+<option value="Lampara">Lámpara</option>
+<option value="Cableado">Cableado</option>
+<option value="Controlador">Controlador</option>
+<option value="Estructural">Estructural</option>
+</select>
 
-    <label>Actividad realizada</label>
-    <select id="actividad" required>
-      <option value="">Seleccione actividad</option>
-    </select>
+<label>Actividad realizada</label>
+<select id="actividad" required>
+<option value="">Seleccione actividad</option>
+</select>
 
-    <label>Observaciones</label>
-    <input type="text" id="observaciones">
+<label>Observaciones</label>
+<input type="text" id="observaciones">
 
-    <label>Técnico responsable</label>
-    <select id="tecnico" required>
-      <option value="">Seleccione</option>
-      <option>Guanerge Salcedo</option>
-      <option>Luis Gutierrez</option>
-      <option>Juan Bolaños</option>
-      <option>Jose Colmenares</option>
-      <option>William Orcasita</option>
-    </select>
+<label>Técnico</label>
+<select id="tecnico" required>
+<option value="">Seleccione</option>
+<option>Guanerge Salcedo</option>
+<option>Luis Gutierrez</option>
+<option>Juan Bolaños</option>
+<option>Jose Colmenares</option>
+<option>William Orcasita</option>
+</select>
 
-    <label>Foto</label>
-    <input type="file" id="foto" accept="image/*" capture="environment" required>
+<label>Foto ANTES (opcional)</label>
+<input type="file" id="fotoAntes" accept="image/*" capture="environment">
 
-    <button type="submit">Guardar</button>
-    <div id="msg"></div>
+<label>Foto DESPUÉS (obligatoria)</label>
+<input type="file" id="fotoDespues" accept="image/*" capture="environment" required>
 
-  </form>
+<button type="submit">Guardar</button>
+<div id="msg"></div>
+
+</form>
 </div>
 
 <script>
-/* 🔗 URL WEB APP */
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzy8K2cf7U3QwVUt_M-cVV8FqYvM0Et_jVjMhS3GEt7zL6bhbYGRlMyXXosb79FvX3e/exec";
+/* 🔗 PEGA AQUÍ TU URL DE APPS SCRIPT */
+const WEB_APP_URL =
+"https://script.google.com/macros/s/AKfycbzuZlf9kVlbQKc8LtkIInVu1HHW7UwW3sE9yQzH-aLYRanVXvF1GTzEB5GB3W0jdn8y/exec";
 
-/* 📂 FALLAS Y ACTIVIDADES */
+/* 🚦 Actividades por tipo de falla */
 const actividades = {
-  "Lampara": [
-    "Lámpara vehicular",
-    "Lámpara peatonal"
-  ],
-  "Cableado": [
-    "Vehicular",
-    "Peatonal",
-    "Acometida eléctrica"
-  ],
-  "Controlador": [
-    "Tarjetas",
-    "Reinicio",
-    "Breaker",
-    "Comunicación",
-    "UPS",
-    "Fusible"
-  ],
-  "Estructural": [
-    "Postes T1",
-    "Postes T2",
-    "Semáforos S1",
-    "Semáforos S2",
-    "Bases",
-    "Anclaje",
-    "Tornillos"
-  ]
+  Lampara:["Vehicular","Peatonal"],
+  Cableado:["Vehicular","Peatonal","Acometida eléctrica"],
+  Controlador:["Tarjetas","Reinicio","Breaker","Comunicación","UPS","Fusible"],
+  Estructural:["Postes T1","Postes T2","Semáforos S1","Semáforos S2","Bases","Anclaje","Tornillos"]
 };
 
 /* 🔄 Cargar actividades */
-document.getElementById("falla").addEventListener("change", function () {
-  const actividad = document.getElementById("actividad");
+falla.onchange = () => {
   actividad.innerHTML = "<option value=''>Seleccione actividad</option>";
-
-  (actividades[this.value] || []).forEach(item => {
-    const opt = document.createElement("option");
-    opt.value = item;
-    opt.textContent = item;
-    actividad.appendChild(opt);
+  (actividades[falla.value] || []).forEach(a=>{
+    let o=document.createElement("option");
+    o.textContent=a;
+    actividad.appendChild(o);
   });
-});
+};
 
-/* 📤 Envío */
-document.getElementById("form").addEventListener("submit", function (e) {
+/* 📤 Enviar formulario */
+form.onsubmit = e => {
   e.preventDefault();
 
-  const file = document.getElementById("foto").files[0];
-  const reader = new FileReader();
+  const leer = f => new Promise(r=>{
+    if(!f) return r("");
+    const fr=new FileReader();
+    fr.onload=()=>r(fr.result.split(",")[1]);
+    fr.readAsDataURL(f);
+  });
 
-  reader.onload = () => {
+  Promise.all([
+    leer(fotoAntes.files[0]),
+    leer(fotoDespues.files[0])
+  ]).then(([antes,despues])=>{
 
-    const payload = {
-      fecha: fecha.value,
-      direccion: direccion.value,
-      falla: falla.value,
-      actividad: actividad.value,
-      observaciones: observaciones.value,
-      tecnico: tecnico.value,
-      foto: reader.result.split(",")[1]
-    };
-
-    fetch(WEB_APP_URL, {
-      method: "POST",
-      mode: "no-cors",
-      body: JSON.stringify(payload)
-    })
-    .then(() => {
-      msg.textContent = "✅ Registro enviado";
-      msg.style.color = "green";
+    fetch(WEB_APP_URL,{
+      method:"POST",
+      body:JSON.stringify({
+        fecha:fecha.value,
+        direccion:direccion.value,
+        falla:falla.value,
+        actividad:actividad.value,
+        observaciones:observaciones.value,
+        tecnico:tecnico.value,
+        fotoAntes:antes,
+        fotoDespues:despues
+      })
+    }).then(()=>{
+      msg.textContent="✅ Registro enviado";
+      msg.style.color="green";
       form.reset();
-      actividad.innerHTML = "<option value=''>Seleccione actividad</option>";
-    })
-    .catch(() => {
-      msg.textContent = "❌ Error al enviar";
-      msg.style.color = "red";
+      actividad.innerHTML="<option value=''>Seleccione actividad</option>";
+    }).catch(()=>{
+      msg.textContent="❌ Error de envío";
+      msg.style.color="red";
     });
-  };
 
-  reader.readAsDataURL(file);
-});
+  });
+};
 </script>
 
 </body>
