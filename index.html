@@ -6,10 +6,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+*{box-sizing:border-box}
 body{background:#0f172a;padding:15px;font-family:system-ui}
 .card{background:white;max-width:420px;margin:auto;padding:20px;border-radius:16px}
 label{font-weight:600;margin-top:12px;display:block}
-input,select,button{width:100%;padding:12px;margin-top:6px;border-radius:10px}
+input,select,button{
+  width:100%;
+  padding:12px;
+  margin-top:6px;
+  border-radius:10px;
+  border:1px solid #d1d5db;
+}
 button{background:#059669;color:white;font-weight:bold;border:none}
 #msg{text-align:center;margin-top:10px;font-weight:bold}
 </style>
@@ -67,9 +74,9 @@ button{background:#059669;color:white;font-weight:bold;border:none}
 </div>
 
 <script>
-/* 🔗 PEGA AQUÍ TU URL DE APPS SCRIPT */
+/* 🔗 URL DEL WEB APP (PEGAR AQUÍ DESPUÉS DE IMPLEMENTAR) */
 const WEB_APP_URL =
-"https://script.google.com/macros/s/AKfycbzuZlf9kVlbQKc8LtkIInVu1HHW7UwW3sE9yQzH-aLYRanVXvF1GTzEB5GB3W0jdn8y/exec";
+"https://script.google.com/macros/s/AKfycbyWDLbDvrApyJ8cUrkVTbKY9dSqHUdJ5n5yH4ksKKopyzkOGRWZjJbSUJCinDA2L3tl/exec";
 
 /* 🚦 Actividades por tipo de falla */
 const actividades = {
@@ -83,7 +90,7 @@ const actividades = {
 falla.onchange = () => {
   actividad.innerHTML = "<option value=''>Seleccione actividad</option>";
   (actividades[falla.value] || []).forEach(a=>{
-    let o=document.createElement("option");
+    const o=document.createElement("option");
     o.textContent=a;
     actividad.appendChild(o);
   });
@@ -117,12 +124,14 @@ form.onsubmit = e => {
         fotoAntes:antes,
         fotoDespues:despues
       })
-    }).then(()=>{
+    })
+    .then(()=> {
       msg.textContent="✅ Registro enviado";
       msg.style.color="green";
       form.reset();
       actividad.innerHTML="<option value=''>Seleccione actividad</option>";
-    }).catch(()=>{
+    })
+    .catch(()=> {
       msg.textContent="❌ Error de envío";
       msg.style.color="red";
     });
@@ -133,3 +142,4 @@ form.onsubmit = e => {
 
 </body>
 </html>
+
