@@ -5,6 +5,12 @@
 <title>Mantenimiento Semafórico</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- 📱 CONFIGURACIÓN PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#059669">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
 <style>
 *{box-sizing:border-box}
 body{background:#0f172a;padding:15px;font-family:system-ui}
@@ -23,6 +29,7 @@ button{background:#059669;color:white;font-weight:bold;border:none}
 </head>
 
 <body>
+
 <div class="card">
 <h2>🚦 Registro Mantenimiento</h2>
 
@@ -74,7 +81,7 @@ button{background:#059669;color:white;font-weight:bold;border:none}
 </div>
 
 <script>
-/* 🔗 URL DEL WEB APP (PEGAR AQUÍ DESPUÉS DE IMPLEMENTAR) */
+/* 🔗 URL DEL WEB APP */
 const WEB_APP_URL =
 "https://script.google.com/macros/s/AKfycbxU1-QOWcJaY_BUn_GG0lHVNyN9BwVR6WPvD_HmzBDIPNENJKj8lfRgdV5eOQamh5U6/exec";
 
@@ -125,13 +132,13 @@ form.onsubmit = e => {
         fotoDespues:despues
       })
     })
-    .then(()=> {
+    .then(()=>{
       msg.textContent="✅ Registro enviado";
       msg.style.color="green";
       form.reset();
       actividad.innerHTML="<option value=''>Seleccione actividad</option>";
     })
-    .catch(()=> {
+    .catch(()=>{
       msg.textContent="❌ Error de envío";
       msg.style.color="red";
     });
@@ -140,6 +147,14 @@ form.onsubmit = e => {
 };
 </script>
 
+<!-- 🔧 REGISTRO SERVICE WORKER -->
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js")
+    .then(() => console.log("✅ PWA lista"))
+    .catch(err => console.log("❌ Error PWA", err));
+}
+</script>
+
 </body>
 </html>
-
