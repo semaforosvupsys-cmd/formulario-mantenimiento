@@ -24,7 +24,16 @@ input,select,button{
   border-radius:10px;
   border:1px solid #d1d5db;
 }
-button{background:#059669;color:white;font-weight:bold;border:none}
+button{
+  background:#059669;
+  color:white;
+  font-weight:bold;
+  border:none;
+}
+button:disabled{
+  background:#9ca3af;
+  cursor:not-allowed;
+}
 #msg{text-align:center;margin-top:10px;font-weight:bold}
 </style>
 </head>
@@ -32,10 +41,9 @@ button{background:#059669;color:white;font-weight:bold;border:none}
 <body>
 
 <div class="card">
-  <div style="text-align:center;margin-bottom:10px">
-  <img src="icons/logo.png"
-       alt="Seguridad y Servicios Señalización"
-       style="max-width:120px">
+
+<div style="text-align:center;margin-bottom:10px">
+  <img src="icons/logo.png" alt="Seguridad y Servicios Señalización" style="max-width:120px">
 </div>
 
 <h2>🚦 Registro Mantenimiento</h2>
@@ -81,7 +89,11 @@ button{background:#059669;color:white;font-weight:bold;border:none}
 <label>Foto DESPUÉS (obligatoria)</label>
 <input type="file" id="fotoDespues" accept="image/*" capture="environment" required>
 
-<button type="submit" id="btnGuardar">Guardar</button>
+<button type="submit" id="btnGuardar">
+  <span id="btnTexto">Guardar</span>
+  <span id="spinner" style="display:none"> ⏳</span>
+</button>
+
 <div id="msg"></div>
 
 </form>
@@ -113,6 +125,12 @@ falla.onchange = () => {
 /* 📤 Enviar formulario */
 form.onsubmit = e => {
   e.preventDefault();
+
+  // 🔒 Estado ENVIANDO
+  btnGuardar.disabled = true;
+  btnTexto.textContent = "Enviando...";
+  spinner.style.display = "inline";
+  msg.textContent = "";
 
   const leer = f => new Promise(r=>{
     if(!f) return r("");
@@ -148,6 +166,12 @@ form.onsubmit = e => {
     .catch(()=>{
       msg.textContent="❌ Error de envío";
       msg.style.color="red";
+    })
+    .finally(()=>{
+      // 🔓 Volver a estado normal
+      btnGuardar.disabled = false;
+      btnTexto.textContent = "Guardar";
+      spinner.style.display = "none";
     });
 
   });
