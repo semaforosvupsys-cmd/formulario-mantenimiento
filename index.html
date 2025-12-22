@@ -20,15 +20,8 @@ input,select,button{
   border-radius:10px;
   border:1px solid #d1d5db;
 }
-button{
-  background:#059669;
-  color:white;
-  font-weight:bold;
-  border:none;
-}
-button:disabled{
-  background:#9ca3af;
-}
+button{background:#059669;color:white;font-weight:bold;border:none}
+button:disabled{background:#9ca3af}
 #msg{text-align:center;margin-top:10px;font-weight:bold}
 </style>
 </head>
@@ -36,7 +29,6 @@ button:disabled{
 <body>
 
 <div class="card">
-
 <div style="text-align:center;margin-bottom:10px">
   <img src="icons/logo.png" style="max-width:120px">
 </div>
@@ -90,34 +82,15 @@ button:disabled{
 </button>
 
 <div id="msg"></div>
-
 </form>
 </div>
 
 <script>
-const WEB_APP_URL =
-"https://script.google.com/macros/s/AKfycbwZbqPJsbS_0NWUguqAojgRciK9QOpeCTwopoA0w8qKx0awo9Pi3ZzIl5xrI0_CNC7h/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwZbqPJsbS_0NWUguqAojgRciK9QOpeCTwopoA0w8qKx0awo9Pi3ZzIl5xrI0_CNC7h/exec";
 
-/* 🔐 CANDADO */
 let enviando = false;
 
-/* 📌 REFERENCIAS */
-const form = document.getElementById("form");
-const falla = document.getElementById("falla");
-const actividad = document.getElementById("actividad");
-const btnGuardar = document.getElementById("btnGuardar");
-const btnTexto = document.getElementById("btnTexto");
-const spinner = document.getElementById("spinner");
-const msg = document.getElementById("msg");
-
-const fecha = document.getElementById("fecha");
-const direccion = document.getElementById("direccion");
-const observaciones = document.getElementById("observaciones");
-const tecnico = document.getElementById("tecnico");
-const fotoAntes = document.getElementById("fotoAntes");
-const fotoDespues = document.getElementById("fotoDespues");
-
-/* 🚦 ACTIVIDADES */
+/* ACTIVIDADES */
 const actividades = {
   Lampara:["Vehicular","Peatonal"],
   Cableado:["Vehicular","Peatonal","Acometida eléctrica"],
@@ -125,139 +98,109 @@ const actividades = {
   Estructural:["Postes T1","Postes T2","Semáforos S1","Semáforos S2","Bases","Anclaje","Tornillos"]
 };
 
-/* 🔄 ACTIVAR ACTIVIDAD */
-falla.addEventListener("change", () => {
-  actividad.innerHTML = "<option value=''>Seleccione actividad</option>";
-  actividad.disabled = true;
-
-  if (!falla.value) return;
-
-  actividades[falla.value].forEach(a => {
-    const o = document.createElement("option");
-    o.value = a;
-    o.textContent = a;
+falla.onchange = ()=>{
+  actividad.innerHTML="<option value=''>Seleccione actividad</option>";
+  actividad.disabled=true;
+  if(!falla.value) return;
+  actividades[falla.value].forEach(a=>{
+    const o=document.createElement("option");
+    o.value=o.textContent=a;
     actividad.appendChild(o);
   });
+  actividad.disabled=false;
+};
 
-  actividad.disabled = false;
-});
-
-/* 🆔 ID CORTO Y CLARO */
+/* ID CORTO */
 function generarID(){
-  const d = new Date();
-  const fecha = d.toISOString().slice(2,10).replace(/-/g,"");
-  const hora = d.toTimeString().slice(0,8).replace(/:/g,"");
-  const rnd = Math.floor(Math.random()*900)+100;
-  return `MNT-${fecha}-${hora}-${rnd}`;
+  return "MNT-" + Date.now().toString(36).slice(-6);
 }
 
-/* 📸 LEER FOTO (SIEMPRE) */
+/* LEER FOTO */
 function leer(f){
   return new Promise(r=>{
     if(!f) return r("");
-    const fr = new FileReader();
-    fr.onload = ()=>r(fr.result.split(",")[1]);
+    const fr=new FileReader();
+    fr.onload=()=>r(fr.result.split(",")[1]);
     fr.readAsDataURL(f);
   });
 }
 
-/* 💾 GUARDAR OFFLINE */
-function guardarOffline(data){
-  const p = JSON.parse(localStorage.getItem("pendientes")||"[]");
-  p.push(data);
+/* GUARDAR OFFLINE */
+function guardarOffline(d){
+  const p=JSON.parse(localStorage.getItem("pendientes")||"[]");
+  p.push(d);
   localStorage.setItem("pendientes",JSON.stringify(p));
 }
 
-/* 📤 SUBMIT */
-form.addEventListener("submit", async e=>{
+/* SUBMIT */
+form.onsubmit = async e=>{
   e.preventDefault();
   if(enviando) return;
 
-  enviando = true;
-  btnGuardar.disabled = true;
-  btnTexto.textContent = "Enviando...";
-  spinner.style.display = "inline";
-  msg.textContent = "";
+  enviando=true;
+  btnGuardar.disabled=true;
+  btnTexto.textContent="Enviando...";
+  spinner.style.display="inline";
+  msg.textContent="";
 
-  /* 📸 LEER FOTOS ANTES DE TODO */
-  form.addEventListener("submit", async e=>{
-  e.preventDefault();
-  if(enviando) return;
-
-  enviando = true;
-  btnGuardar.disabled = true;
-  btnTexto.textContent = "Enviando...";
-  spinner.style.display = "inline";
-  msg.textContent = "";
-
-  const datos = {
-    id: generarID(),
-    fecha: fecha.value,
-    direccion: direccion.value,
-    falla: falla.value,
-    actividad: actividad.value,
-    observaciones: observaciones.value,
-    tecnico: tecnico.value,
-    fotoAntes: fotoAntes.files[0] || null,
-    fotoDespues: fotoDespues.files[0]
+  const datos={
+    id:generarID(),
+    fecha:fecha.value,
+    direccion:direccion.value,
+    falla:falla.value,
+    actividad:actividad.value,
+    observaciones:observaciones.value,
+    tecnico:tecnico.value,
+    fotoAntes:fotoAntes.files[0]||null,
+    fotoDespues:fotoDespues.files[0]
   };
 
-  /* 📵 SIN INTERNET → SALIR RÁPIDO */
   if(!navigator.onLine){
     guardarOffline(datos);
     finalizar("📵 Guardado sin internet","orange");
     return;
   }
 
-  /* 📶 CON INTERNET → CONVERTIR FOTOS */
   datos.fotoAntes = await leer(datos.fotoAntes);
   datos.fotoDespues = await leer(datos.fotoDespues);
 
   try{
-    await fetch(WEB_APP_URL,{
-      method:"POST",
-      body:JSON.stringify(datos)
-    });
+    await fetch(WEB_APP_URL,{method:"POST",body:JSON.stringify(datos)});
     finalizar("✅ Registro enviado","green");
   }catch{
     guardarOffline(datos);
-    finalizar("⚠️ Error. Guardado localmente","orange");
+    finalizar("⚠️ Error. Guardado local","orange");
   }
-});
+};
 
-/* 🔁 REENVÍO OFFLINE (SIN DUPLICAR) */
-window.addEventListener("online", async ()=>{
-  let pendientes = JSON.parse(localStorage.getItem("pendientes")||"[]");
-  if(!pendientes.length) return;
-
-  const restantes=[];
-  for(const p of pendientes){
+/* REENVÍO OFFLINE */
+window.addEventListener("online",async()=>{
+  let p=JSON.parse(localStorage.getItem("pendientes")||"[]");
+  if(!p.length) return;
+  const r=[];
+  for(const d of p){
     try{
-      await fetch(WEB_APP_URL,{
-        method:"POST",
-        body:JSON.stringify(p)
-      });
-    }catch{
-      restantes.push(p);
-    }
+      d.fotoAntes = await leer(d.fotoAntes);
+      d.fotoDespues = await leer(d.fotoDespues);
+      await fetch(WEB_APP_URL,{method:"POST",body:JSON.stringify(d)});
+    }catch{ r.push(d); }
   }
-  localStorage.setItem("pendientes",JSON.stringify(restantes));
+  localStorage.setItem("pendientes",JSON.stringify(r));
 });
 
-/* 🔄 FINALIZAR */
-function finalizar(texto,color){
-  msg.textContent = texto;
-  msg.style.color = color;
+/* RESET */
+function finalizar(t,c){
+  msg.textContent=t;
+  msg.style.color=c;
   form.reset();
   actividad.innerHTML="<option value=''>Seleccione actividad</option>";
-  actividad.disabled = true;
-  btnGuardar.disabled = false;
-  btnTexto.textContent = "Guardar";
-  spinner.style.display = "none";
-  enviando = false;
+  actividad.disabled=true;
+  btnGuardar.disabled=false;
+  btnTexto.textContent="Guardar";
+  spinner.style.display="none";
+  enviando=false;
 }
 </script>
 
 </body>
 </html>
-
