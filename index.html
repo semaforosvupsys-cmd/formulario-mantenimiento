@@ -86,11 +86,11 @@ button:disabled{background:#9ca3af}
 </div>
 
 <script>
+/* ================= CONFIG ================= */
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwZbqPJsbS_0NWUguqAojgRciK9QOpeCTwopoA0w8qKx0awo9Pi3ZzIl5xrI0_CNC7h/exec";
-
 let enviando = false;
 
-/* ACTIVIDADES */
+/* ================= ACTIVIDADES ================= */
 const actividades = {
   Lampara:["Vehicular","Peatonal"],
   Cableado:["Vehicular","Peatonal","Acometida eléctrica"],
@@ -110,12 +110,12 @@ falla.onchange = ()=>{
   actividad.disabled=false;
 };
 
-/* ID CORTO */
+/* ================= ID CORTO ================= */
 function generarID(){
   return "MNT-" + Date.now().toString(36).slice(-6);
 }
 
-/* LEER FOTO */
+/* ================= LEER FOTO ================= */
 function leer(f){
   return new Promise(r=>{
     if(!f) return r("");
@@ -125,14 +125,14 @@ function leer(f){
   });
 }
 
-/* GUARDAR OFFLINE */
+/* ================= OFFLINE ================= */
 function guardarOffline(d){
   const p=JSON.parse(localStorage.getItem("pendientes")||"[]");
   p.push(d);
   localStorage.setItem("pendientes",JSON.stringify(p));
 }
 
-/* SUBMIT */
+/* ================= SUBMIT ================= */
 form.onsubmit = async e=>{
   e.preventDefault();
   if(enviando) return;
@@ -151,18 +151,22 @@ form.onsubmit = async e=>{
     actividad: actividad.value,
     observaciones: observaciones.value,
     tecnico: tecnico.value,
-    fotoAntes: await leer(fotoAntes.files[0]),
-    fotoDespues: await leer(fotoDespues.files[0])
+    fotoAntes:"",
+    fotoDespues:"",
+    sinFotos: !navigator.onLine
   };
 
-  // 📵 SIN INTERNET → GUARDAR TODO (INCLUYE FOTOS)
+  /* 📵 SIN INTERNET → SOLO TEXTO */
   if(!navigator.onLine){
     guardarOffline(datos);
     finalizar("📵 Guardado sin internet","orange");
     return;
   }
 
-  // 📶 CON INTERNET
+  /* 📶 CON INTERNET → CON FOTOS */
+  datos.fotoAntes = await leer(fotoAntes.files[0]);
+  datos.fotoDespues = await leer(fotoDespues.files[0]);
+
   try{
     await fetch(WEB_APP_URL,{
       method:"POST",
@@ -171,27 +175,25 @@ form.onsubmit = async e=>{
     finalizar("✅ Registro enviado","green");
   }catch{
     guardarOffline(datos);
-    finalizar("⚠️ Error. Guardado local","orange");
+    finalizar("⚠️ Error, guardado local","orange");
   }
 };
 
-
-/* REENVÍO OFFLINE */
-window.addEventListener("online",async()=>{
+/* ================= REENVÍO ================= */
+window.addEventListener("online", async ()=>{
   let p=JSON.parse(localStorage.getItem("pendientes")||"[]");
   if(!p.length) return;
+
   const r=[];
   for(const d of p){
     try{
-      d.fotoAntes = await leer(d.fotoAntes);
-      d.fotoDespues = await leer(d.fotoDespues);
       await fetch(WEB_APP_URL,{method:"POST",body:JSON.stringify(d)});
     }catch{ r.push(d); }
   }
   localStorage.setItem("pendientes",JSON.stringify(r));
 });
 
-/* RESET */
+/* ================= FINALIZAR ================= */
 function finalizar(t,c){
   msg.textContent=t;
   msg.style.color=c;
@@ -202,6 +204,11 @@ function finalizar(t,c){
   btnTexto.textContent="Guardar";
   spinner.style.display="none";
   enviando=false;
+}
+
+/* ================= SERVICE WORKER ================= */
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js");
 }
 </script>
 
