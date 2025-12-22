@@ -101,6 +101,22 @@ const WEB_APP_URL =
 /* 🔐 CANDADO */
 let enviando = false;
 
+/* 📌 REFERENCIAS */
+const form = document.getElementById("form");
+const falla = document.getElementById("falla");
+const actividad = document.getElementById("actividad");
+const btnGuardar = document.getElementById("btnGuardar");
+const btnTexto = document.getElementById("btnTexto");
+const spinner = document.getElementById("spinner");
+const msg = document.getElementById("msg");
+
+const fecha = document.getElementById("fecha");
+const direccion = document.getElementById("direccion");
+const observaciones = document.getElementById("observaciones");
+const tecnico = document.getElementById("tecnico");
+const fotoAntes = document.getElementById("fotoAntes");
+const fotoDespues = document.getElementById("fotoDespues");
+
 /* 🚦 ACTIVIDADES */
 const actividades = {
   Lampara:["Vehicular","Peatonal"],
@@ -109,21 +125,37 @@ const actividades = {
   Estructural:["Postes T1","Postes T2","Semáforos S1","Semáforos S2","Bases","Anclaje","Tornillos"]
 };
 
-/* 🔄 ACTIVAR ACTIVIDADES */
-falla.addEventListener("change",()=>{
+/* 🔄 ACTIVAR ACTIVIDAD */
+falla.addEventListener("change", () => {
   actividad.innerHTML = "<option value=''>Seleccione actividad</option>";
   actividad.disabled = true;
 
-  if(!falla.value) return;
+  if (!falla.value) return;
 
-  actividades[falla.value].forEach(a=>{
-    const o=document.createElement("option");
-    o.value=o.textContent=a;
+  actividades[falla.value].forEach(a => {
+    const o = document.createElement("option");
+    o.value = a;
+    o.textContent = a;
     actividad.appendChild(o);
   });
 
   actividad.disabled = false;
 });
+
+/* 🆔 ID ÚNICO */
+function generarID(){
+  return Date.now().toString(36) + Math.random().toString(36).substring(2);
+}
+
+/* 📸 LEER FOTO */
+function leer(f){
+  return new Promise(r=>{
+    if(!f) return r("");
+    const fr=new FileReader();
+    fr.onload=()=>r(fr.result.split(",")[1]);
+    fr.readAsDataURL(f);
+  });
+}
 
 /* 💾 OFFLINE */
 function guardarOffline(data){
@@ -131,11 +163,6 @@ function guardarOffline(data){
   p.push(data);
   localStorage.setItem("pendientes",JSON.stringify(p));
 }
-<script>
-function generarID(){
-  return Date.now().toString(36) + Math.random().toString(36).substring(2);
-}
-</script>
 
 /* 📤 SUBMIT */
 form.addEventListener("submit", async e=>{
@@ -148,32 +175,23 @@ form.addEventListener("submit", async e=>{
   spinner.style.display="inline";
   msg.textContent="";
 
-const datos = {
-  id: generarID(),   // 👈 NUEVO
-  fecha: fecha.value,
-  direccion: direccion.value,
-  falla: falla.value,
-  actividad: actividad.value,
-  observaciones: observaciones.value,
-  tecnico: tecnico.value,
-  fotoAntes: await leer(fotoAntes.files[0]),
-  fotoDespues: await leer(fotoDespues.files[0])
-};
+  const datos = {
+    id: generarID(),
+    fecha: fecha.value,
+    direccion: direccion.value,
+    falla: falla.value,
+    actividad: actividad.value,
+    observaciones: observaciones.value,
+    tecnico: tecnico.value,
+    fotoAntes: "",
+    fotoDespues: ""
+  };
 
-  /* 🚫 SIN INTERNET → NO LEER FOTOS */
   if(!navigator.onLine){
     guardarOffline(datos);
     finalizar("📵 Guardado sin internet","orange");
     return;
   }
-
-  /* 📸 LEER FOTOS SOLO CON INTERNET */
-  const leer = f => new Promise(r=>{
-    if(!f) return r("");
-    const fr=new FileReader();
-    fr.onload=()=>r(fr.result.split(",")[1]);
-    fr.readAsDataURL(f);
-  });
 
   datos.fotoAntes = await leer(fotoAntes.files[0]);
   datos.fotoDespues = await leer(fotoDespues.files[0]);
@@ -190,7 +208,7 @@ const datos = {
   }
 });
 
-/* 🔁 REENVÍO OFFLINE CONTROLADO */
+/* 🔁 REENVÍO OFFLINE */
 window.addEventListener("online", async ()=>{
   let pendientes = JSON.parse(localStorage.getItem("pendientes")||"[]");
   if(!pendientes.length) return;
@@ -220,12 +238,6 @@ function finalizar(texto,color){
   btnTexto.textContent="Guardar";
   spinner.style.display="none";
   enviando=false;
-}
-</script>
-
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js");
 }
 </script>
 
