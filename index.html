@@ -143,35 +143,38 @@ form.onsubmit = async e=>{
   spinner.style.display="inline";
   msg.textContent="";
 
-  const datos={
-    id:generarID(),
-    fecha:fecha.value,
-    direccion:direccion.value,
-    falla:falla.value,
-    actividad:actividad.value,
-    observaciones:observaciones.value,
-    tecnico:tecnico.value,
-    fotoAntes:fotoAntes.files[0]||null,
-    fotoDespues:fotoDespues.files[0]
+  const datos = {
+    id: generarID(),
+    fecha: fecha.value,
+    direccion: direccion.value,
+    falla: falla.value,
+    actividad: actividad.value,
+    observaciones: observaciones.value,
+    tecnico: tecnico.value,
+    fotoAntes: await leer(fotoAntes.files[0]),
+    fotoDespues: await leer(fotoDespues.files[0])
   };
 
+  // 📵 SIN INTERNET → GUARDAR TODO (INCLUYE FOTOS)
   if(!navigator.onLine){
     guardarOffline(datos);
     finalizar("📵 Guardado sin internet","orange");
     return;
   }
 
-  datos.fotoAntes = await leer(datos.fotoAntes);
-  datos.fotoDespues = await leer(datos.fotoDespues);
-
+  // 📶 CON INTERNET
   try{
-    await fetch(WEB_APP_URL,{method:"POST",body:JSON.stringify(datos)});
+    await fetch(WEB_APP_URL,{
+      method:"POST",
+      body:JSON.stringify(datos)
+    });
     finalizar("✅ Registro enviado","green");
   }catch{
     guardarOffline(datos);
     finalizar("⚠️ Error. Guardado local","orange");
   }
 };
+
 
 /* REENVÍO OFFLINE */
 window.addEventListener("online",async()=>{
