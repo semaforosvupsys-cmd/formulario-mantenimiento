@@ -148,16 +148,18 @@ form.onsubmit = e => {
     leer(fotoDespues.files[0])
   ]).then(([antes,despues])=>{
 
-    const datos = {
-      fecha:fecha.value,
-      direccion:direccion.value,
-      falla:falla.value,
-      actividad:actividad.value,
-      observaciones:observaciones.value,
-      tecnico:tecnico.value,
-      fotoAntes:antes,
-      fotoDespues:despues
+   const datos = {
+  id: Date.now(), // 🔑 ID ÚNICO
+  fecha:fecha.value,
+  direccion:direccion.value,
+  falla:falla.value,
+  actividad:actividad.value,
+  observaciones:observaciones.value,
+  tecnico:tecnico.value,
+  fotoAntes:antes,
+  fotoDespues:despues
     };
+
 
     // 📵 SIN INTERNET
     if(!navigator.onLine){
@@ -180,12 +182,17 @@ form.onsubmit = e => {
       msg.textContent="✅ Registro enviado";
       msg.style.color="green";
       form.reset();
-    })
     .catch(()=>{
-      guardarOffline(datos);
-      msg.textContent="⚠️ Error. Guardado localmente";
-      msg.style.color="orange";
-    })
+  if(!navigator.onLine){
+    guardarOffline(datos);
+    msg.textContent="📵 Sin internet. Guardado localmente";
+    msg.style.color="orange";
+  } else {
+    msg.textContent="❌ Error de envío";
+    msg.style.color="red";
+  }
+})
+
     .finally(()=>{
       btnGuardar.disabled=false;
       btnTexto.textContent="Guardar";
@@ -200,14 +207,21 @@ window.addEventListener("online",()=>{
   const pendientes = JSON.parse(localStorage.getItem("pendientes") || "[]");
   if(pendientes.length===0) return;
 
-  pendientes.forEach(p=>{
-    fetch(WEB_APP_URL,{
-      method:"POST",
-      body:JSON.stringify(p)
-    });
+const enviados = new Set();
+
+pendientes.forEach(p=>{
+  if(enviados.has(p.id)) return;
+
+  fetch(WEB_APP_URL,{
+    method:"POST",
+    body:JSON.stringify(p)
   });
 
-  localStorage.removeItem("pendientes");
+  enviados.add(p.id);
+});
+
+localStorage.removeItem("pendientes");
+
 });
 </script>
 
