@@ -10,7 +10,6 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#059669">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
 
 <style>
 *{box-sizing:border-box}
@@ -32,7 +31,6 @@ button{
 }
 button:disabled{
   background:#9ca3af;
-  cursor:not-allowed;
 }
 #msg{text-align:center;margin-top:10px;font-weight:bold}
 </style>
@@ -66,7 +64,7 @@ button:disabled{
 </select>
 
 <label>Actividad realizada</label>
-<select id="actividad" required>
+<select id="actividad" required disabled>
 <option value="">Seleccione actividad</option>
 </select>
 
@@ -95,7 +93,6 @@ button:disabled{
 </button>
 
 <div id="msg"></div>
-
 </form>
 </div>
 
@@ -111,23 +108,27 @@ const actividades = {
   Estructural:["Postes T1","Postes T2","Semáforos S1","Semáforos S2","Bases","Anclaje","Tornillos"]
 };
 
+/* 🔄 HABILITAR ACTIVIDAD */
 falla.onchange = () => {
   actividad.innerHTML = "<option value=''>Seleccione actividad</option>";
+  actividad.disabled = false;
+
   (actividades[falla.value] || []).forEach(a=>{
     const o=document.createElement("option");
-    o.textContent=a;
+    o.value = a;
+    o.textContent = a;
     actividad.appendChild(o);
   });
 };
 
-/* 💾 GUARDAR OFFLINE */
+/* 💾 OFFLINE */
 function guardarOffline(data){
   const pendientes = JSON.parse(localStorage.getItem("pendientes") || "[]");
   pendientes.push(data);
   localStorage.setItem("pendientes", JSON.stringify(pendientes));
 }
 
-/* 📤 ENVIAR FORMULARIO */
+/* 📤 ENVIAR */
 form.onsubmit = e => {
   e.preventDefault();
 
@@ -148,32 +149,26 @@ form.onsubmit = e => {
     leer(fotoDespues.files[0])
   ]).then(([antes,despues])=>{
 
-   const datos = {
-  id: Date.now(), // 🔑 ID ÚNICO
-  fecha:fecha.value,
-  direccion:direccion.value,
-  falla:falla.value,
-  actividad:actividad.value,
-  observaciones:observaciones.value,
-  tecnico:tecnico.value,
-  fotoAntes:antes,
-  fotoDespues:despues
+    const datos = {
+      id: Date.now(),
+      fecha:fecha.value,
+      direccion:direccion.value,
+      falla:falla.value,
+      actividad:actividad.value,
+      observaciones:observaciones.value,
+      tecnico:tecnico.value,
+      fotoAntes:antes,
+      fotoDespues:despues
     };
 
-
-    // 📵 SIN INTERNET
     if(!navigator.onLine){
       guardarOffline(datos);
-      msg.textContent="📵 Sin internet. Guardado en el celular";
+      msg.textContent="📵 Guardado sin internet";
       msg.style.color="orange";
-      form.reset();
-      btnGuardar.disabled=false;
-      btnTexto.textContent="Guardar";
-      spinner.style.display="none";
+      resetFormulario();
       return;
     }
 
-    // 📶 CON INTERNET
     fetch(WEB_APP_URL,{
       method:"POST",
       body:JSON.stringify(datos)
@@ -181,51 +176,36 @@ form.onsubmit = e => {
     .then(()=>{
       msg.textContent="✅ Registro enviado";
       msg.style.color="green";
-      form.reset();
+    })
     .catch(()=>{
-  if(!navigator.onLine){
-    guardarOffline(datos);
-    msg.textContent="📵 Sin internet. Guardado localmente";
-    msg.style.color="orange";
-  } else {
-    msg.textContent="❌ Error de envío";
-    msg.style.color="red";
-  }
-})
-
-    .finally(()=>{
-      btnGuardar.disabled=false;
-      btnTexto.textContent="Guardar";
-      spinner.style.display="none";
-    });
-
+      guardarOffline(datos);
+      msg.textContent="⚠️ Guardado localmente";
+      msg.style.color="orange";
+    })
+    .finally(resetFormulario);
   });
 };
 
-/* 🔁 REENVIAR AL VOLVER INTERNET */
+/* 🔄 RESET LIMPIO */
+function resetFormulario(){
+  form.reset();
+  actividad.innerHTML="<option value=''>Seleccione actividad</option>";
+  actividad.disabled = true;
+  btnGuardar.disabled=false;
+  btnTexto.textContent="Guardar";
+  spinner.style.display="none";
+}
+
+/* 🔁 REENVÍO */
 window.addEventListener("online",()=>{
   const pendientes = JSON.parse(localStorage.getItem("pendientes") || "[]");
-  if(pendientes.length===0) return;
-
-const enviados = new Set();
-
-pendientes.forEach(p=>{
-  if(enviados.has(p.id)) return;
-
-  fetch(WEB_APP_URL,{
-    method:"POST",
-    body:JSON.stringify(p)
+  pendientes.forEach(p=>{
+    fetch(WEB_APP_URL,{method:"POST",body:JSON.stringify(p)});
   });
-
-  enviados.add(p.id);
+  localStorage.removeItem("pendientes");
 });
 
-localStorage.removeItem("pendientes");
-
-});
-</script>
-
-<script>
+/* 🔧 SW */
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js");
 }
