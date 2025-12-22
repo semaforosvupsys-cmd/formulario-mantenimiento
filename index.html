@@ -5,6 +5,9 @@
 <title>Mantenimiento Semafórico</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#059669">
+
 <style>
 *{box-sizing:border-box}
 body{background:#0f172a;padding:15px;font-family:system-ui}
@@ -17,8 +20,15 @@ input,select,button{
   border-radius:10px;
   border:1px solid #d1d5db;
 }
-button{background:#059669;color:white;font-weight:bold;border:none}
-button:disabled{background:#9ca3af}
+button{
+  background:#059669;
+  color:white;
+  font-weight:bold;
+  border:none;
+}
+button:disabled{
+  background:#9ca3af;
+}
 #msg{text-align:center;margin-top:10px;font-weight:bold}
 </style>
 </head>
@@ -26,6 +36,11 @@ button:disabled{background:#9ca3af}
 <body>
 
 <div class="card">
+
+<div style="text-align:center;margin-bottom:10px">
+  <img src="icons/logo.png" style="max-width:120px">
+</div>
+
 <h2>🚦 Registro Mantenimiento</h2>
 
 <form id="form">
@@ -38,16 +53,16 @@ button:disabled{background:#9ca3af}
 
 <label>Tipo de falla</label>
 <select id="falla" required>
-<option value="">Seleccione</option>
-<option>Lampara</option>
-<option>Cableado</option>
-<option>Controlador</option>
-<option>Estructural</option>
+  <option value="">Seleccione</option>
+  <option value="Lampara">Lámpara</option>
+  <option value="Cableado">Cableado</option>
+  <option value="Controlador">Controlador</option>
+  <option value="Estructural">Estructural</option>
 </select>
 
 <label>Actividad realizada</label>
 <select id="actividad" required disabled>
-<option value="">Seleccione actividad</option>
+  <option value="">Seleccione actividad</option>
 </select>
 
 <label>Observaciones</label>
@@ -55,20 +70,23 @@ button:disabled{background:#9ca3af}
 
 <label>Técnico</label>
 <select id="tecnico" required>
-<option value="">Seleccione</option>
-<option>Luis Gutierrez</option>
-<option>Jose Colmenares</option>
+  <option value="">Seleccione</option>
+  <option>Guanerge Salcedo</option>
+  <option>Luis Gutierrez</option>
+  <option>Juan Bolaños</option>
+  <option>Jose Colmenares</option>
+  <option>William Orcasita</option>
 </select>
 
-<label>Foto ANTES</label>
-<input type="file" id="fotoAntes" accept="image/*">
+<label>Foto ANTES (opcional)</label>
+<input type="file" id="fotoAntes" accept="image/*" capture="environment">
 
-<label>Foto DESPUÉS</label>
-<input type="file" id="fotoDespues" accept="image/*" required>
+<label>Foto DESPUÉS (obligatoria)</label>
+<input type="file" id="fotoDespues" accept="image/*" capture="environment" required>
 
-<button id="btnGuardar">
-<span id="btnTexto">Guardar</span>
-<span id="spinner" style="display:none"> ⏳</span>
+<button type="submit" id="btnGuardar">
+  <span id="btnTexto">Guardar</span>
+  <span id="spinner" style="display:none"> ⏳</span>
 </button>
 
 <div id="msg"></div>
@@ -77,51 +95,49 @@ button:disabled{background:#9ca3af}
 </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxU1-QOWcJaY_BUn_GG0lHVNyN9BwVR6WPvD_HmzBDIPNENJKj8lfRgdV5eOQamh5U6/exec";
+const WEB_APP_URL =
+"https://script.google.com/macros/s/AKfycbxU1-QOWcJaY_BUn_GG0lHVNyN9BwVR6WPvD_HmzBDIPNENJKj8lfRgdV5eOQamh5U6/exec";
 
+/* 🔐 CANDADO */
 let enviando = false;
 
-/* ACTIVIDADES */
+/* 🚦 ACTIVIDADES */
 const actividades = {
   Lampara:["Vehicular","Peatonal"],
   Cableado:["Vehicular","Peatonal","Acometida eléctrica"],
-  Controlador:["Tarjetas","Reinicio","Breaker","Comunicación","UPS"],
-  Estructural:["Postes","Semáforos","Bases","Anclaje"]
+  Controlador:["Tarjetas","Reinicio","Breaker","Comunicación","UPS","Fusible"],
+  Estructural:["Postes T1","Postes T2","Semáforos S1","Semáforos S2","Bases","Anclaje","Tornillos"]
 };
 
-falla.onchange = ()=>{
-  actividad.innerHTML="<option value=''>Seleccione actividad</option>";
-  actividad.disabled=true;
+/* 🔄 ACTIVAR ACTIVIDADES */
+falla.addEventListener("change",()=>{
+  actividad.innerHTML = "<option value=''>Seleccione actividad</option>";
+  actividad.disabled = true;
+
   if(!falla.value) return;
+
   actividades[falla.value].forEach(a=>{
     const o=document.createElement("option");
     o.value=o.textContent=a;
     actividad.appendChild(o);
   });
-  actividad.disabled=false;
-};
 
-/* GUARDAR OFFLINE */
-function guardarOffline(data){
-  const p = JSON.parse(localStorage.getItem("pendientes") || "[]");
-  p.push(data);
-  localStorage.setItem("pendientes", JSON.stringify(p));
-}
-
-/* LEER IMAGEN */
-const leer = f => new Promise(r=>{
-  if(!f) return r("");
-  const fr=new FileReader();
-  fr.onload=()=>r(fr.result.split(",")[1]);
-  fr.readAsDataURL(f);
+  actividad.disabled = false;
 });
 
-/* SUBMIT */
-form.onsubmit = async e=>{
+/* 💾 OFFLINE */
+function guardarOffline(data){
+  const p = JSON.parse(localStorage.getItem("pendientes")||"[]");
+  p.push(data);
+  localStorage.setItem("pendientes",JSON.stringify(p));
+}
+
+/* 📤 SUBMIT */
+form.addEventListener("submit", async e=>{
   e.preventDefault();
   if(enviando) return;
-  enviando=true;
 
+  enviando=true;
   btnGuardar.disabled=true;
   btnTexto.textContent="Enviando...";
   spinner.style.display="inline";
@@ -134,60 +150,79 @@ form.onsubmit = async e=>{
     actividad:actividad.value,
     observaciones:observaciones.value,
     tecnico:tecnico.value,
-    fotoAntes: await leer(fotoAntes.files[0]),
-    fotoDespues: await leer(fotoDespues.files[0])
+    fotoAntes:"",
+    fotoDespues:""
   };
 
-  /* 📵 OFFLINE → SOLO GUARDA */
+  /* 🚫 SIN INTERNET → NO LEER FOTOS */
   if(!navigator.onLine){
     guardarOffline(datos);
-    msg.textContent="📵 Guardado sin internet";
-    msg.style.color="orange";
-    reset();
+    finalizar("📵 Guardado sin internet","orange");
     return;
   }
 
-  /* 📶 ONLINE → ENVÍA */
-  fetch(WEB_APP_URL,{
-    method:"POST",
-    body:JSON.stringify(datos)
-  })
-  .then(()=>{
-    msg.textContent="✅ Enviado";
-    msg.style.color="green";
-  })
-  .catch(()=>{
-    guardarOffline(datos);
-    msg.textContent="⚠️ Guardado localmente";
-    msg.style.color="orange";
-  })
-  .finally(reset);
-};
+  /* 📸 LEER FOTOS SOLO CON INTERNET */
+  const leer = f => new Promise(r=>{
+    if(!f) return r("");
+    const fr=new FileReader();
+    fr.onload=()=>r(fr.result.split(",")[1]);
+    fr.readAsDataURL(f);
+  });
 
-/* 🔁 REENVÍO CONTROLADO */
-window.addEventListener("online", async ()=>{
-  const p = JSON.parse(localStorage.getItem("pendientes") || "[]");
-  if(!p.length) return;
+  datos.fotoAntes = await leer(fotoAntes.files[0]);
+  datos.fotoDespues = await leer(fotoDespues.files[0]);
 
-  for(const d of p){
+  try{
     await fetch(WEB_APP_URL,{
       method:"POST",
-      body:JSON.stringify(d)
+      body:JSON.stringify(datos)
     });
+    finalizar("✅ Registro enviado","green");
+  }catch{
+    guardarOffline(datos);
+    finalizar("⚠️ Error. Guardado localmente","orange");
   }
-  localStorage.removeItem("pendientes");
 });
 
-/* RESET SEGURO */
-function reset(){
-  enviando=false;
+/* 🔁 REENVÍO OFFLINE CONTROLADO */
+window.addEventListener("online", async ()=>{
+  let pendientes = JSON.parse(localStorage.getItem("pendientes")||"[]");
+  if(!pendientes.length) return;
+
+  const restantes=[];
+  for(const p of pendientes){
+    try{
+      await fetch(WEB_APP_URL,{
+        method:"POST",
+        body:JSON.stringify(p)
+      });
+    }catch{
+      restantes.push(p);
+    }
+  }
+  localStorage.setItem("pendientes",JSON.stringify(restantes));
+});
+
+/* 🔄 FINALIZAR */
+function finalizar(texto,color){
+  msg.textContent=texto;
+  msg.style.color=color;
+  form.reset();
+  actividad.innerHTML="<option value=''>Seleccione actividad</option>";
+  actividad.disabled=true;
   btnGuardar.disabled=false;
   btnTexto.textContent="Guardar";
   spinner.style.display="none";
-  form.reset();
-  actividad.disabled=true;
+  enviando=false;
+}
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
 }
 </script>
 
 </body>
 </html>
+
