@@ -180,8 +180,15 @@ form.addEventListener("submit", async e=>{
   msg.textContent = "";
 
   /* 📸 LEER FOTOS ANTES DE TODO */
-  const fotoAntes64 = await leer(fotoAntes.files[0]);
-  const fotoDespues64 = await leer(fotoDespues.files[0]);
+  form.addEventListener("submit", async e=>{
+  e.preventDefault();
+  if(enviando) return;
+
+  enviando = true;
+  btnGuardar.disabled = true;
+  btnTexto.textContent = "Enviando...";
+  spinner.style.display = "inline";
+  msg.textContent = "";
 
   const datos = {
     id: generarID(),
@@ -191,18 +198,21 @@ form.addEventListener("submit", async e=>{
     actividad: actividad.value,
     observaciones: observaciones.value,
     tecnico: tecnico.value,
-    fotoAntes: fotoAntes64,
-    fotoDespues: fotoDespues64
+    fotoAntes: fotoAntes.files[0] || null,
+    fotoDespues: fotoDespues.files[0]
   };
 
-  /* 📵 SIN INTERNET */
+  /* 📵 SIN INTERNET → SALIR RÁPIDO */
   if(!navigator.onLine){
     guardarOffline(datos);
     finalizar("📵 Guardado sin internet","orange");
     return;
   }
 
-  /* 📶 CON INTERNET */
+  /* 📶 CON INTERNET → CONVERTIR FOTOS */
+  datos.fotoAntes = await leer(datos.fotoAntes);
+  datos.fotoDespues = await leer(datos.fotoDespues);
+
   try{
     await fetch(WEB_APP_URL,{
       method:"POST",
