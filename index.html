@@ -142,22 +142,26 @@ falla.addEventListener("change", () => {
   actividad.disabled = false;
 });
 
-/* 🆔 ID ÚNICO */
+/* 🆔 ID CORTO Y CLARO */
 function generarID(){
-  return Date.now().toString(36) + Math.random().toString(36).substring(2);
+  const d = new Date();
+  const fecha = d.toISOString().slice(2,10).replace(/-/g,"");
+  const hora = d.toTimeString().slice(0,8).replace(/:/g,"");
+  const rnd = Math.floor(Math.random()*900)+100;
+  return `MNT-${fecha}-${hora}-${rnd}`;
 }
 
-/* 📸 LEER FOTO */
+/* 📸 LEER FOTO (SIEMPRE) */
 function leer(f){
   return new Promise(r=>{
     if(!f) return r("");
-    const fr=new FileReader();
-    fr.onload=()=>r(fr.result.split(",")[1]);
+    const fr = new FileReader();
+    fr.onload = ()=>r(fr.result.split(",")[1]);
     fr.readAsDataURL(f);
   });
 }
 
-/* 💾 OFFLINE */
+/* 💾 GUARDAR OFFLINE */
 function guardarOffline(data){
   const p = JSON.parse(localStorage.getItem("pendientes")||"[]");
   p.push(data);
@@ -169,11 +173,15 @@ form.addEventListener("submit", async e=>{
   e.preventDefault();
   if(enviando) return;
 
-  enviando=true;
-  btnGuardar.disabled=true;
-  btnTexto.textContent="Enviando...";
-  spinner.style.display="inline";
-  msg.textContent="";
+  enviando = true;
+  btnGuardar.disabled = true;
+  btnTexto.textContent = "Enviando...";
+  spinner.style.display = "inline";
+  msg.textContent = "";
+
+  /* 📸 LEER FOTOS ANTES DE TODO */
+  const fotoAntes64 = await leer(fotoAntes.files[0]);
+  const fotoDespues64 = await leer(fotoDespues.files[0]);
 
   const datos = {
     id: generarID(),
@@ -183,19 +191,18 @@ form.addEventListener("submit", async e=>{
     actividad: actividad.value,
     observaciones: observaciones.value,
     tecnico: tecnico.value,
-    fotoAntes: "",
-    fotoDespues: ""
+    fotoAntes: fotoAntes64,
+    fotoDespues: fotoDespues64
   };
 
+  /* 📵 SIN INTERNET */
   if(!navigator.onLine){
     guardarOffline(datos);
     finalizar("📵 Guardado sin internet","orange");
     return;
   }
 
-  datos.fotoAntes = await leer(fotoAntes.files[0]);
-  datos.fotoDespues = await leer(fotoDespues.files[0]);
-
+  /* 📶 CON INTERNET */
   try{
     await fetch(WEB_APP_URL,{
       method:"POST",
@@ -208,7 +215,7 @@ form.addEventListener("submit", async e=>{
   }
 });
 
-/* 🔁 REENVÍO OFFLINE */
+/* 🔁 REENVÍO OFFLINE (SIN DUPLICAR) */
 window.addEventListener("online", async ()=>{
   let pendientes = JSON.parse(localStorage.getItem("pendientes")||"[]");
   if(!pendientes.length) return;
@@ -229,15 +236,15 @@ window.addEventListener("online", async ()=>{
 
 /* 🔄 FINALIZAR */
 function finalizar(texto,color){
-  msg.textContent=texto;
-  msg.style.color=color;
+  msg.textContent = texto;
+  msg.style.color = color;
   form.reset();
   actividad.innerHTML="<option value=''>Seleccione actividad</option>";
-  actividad.disabled=true;
-  btnGuardar.disabled=false;
-  btnTexto.textContent="Guardar";
-  spinner.style.display="none";
-  enviando=false;
+  actividad.disabled = true;
+  btnGuardar.disabled = false;
+  btnTexto.textContent = "Guardar";
+  spinner.style.display = "none";
+  enviando = false;
 }
 </script>
 
