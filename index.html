@@ -53,7 +53,7 @@ button:disabled{background:#9ca3af}
 </select>
 
 <label>Actividad realizada</label>
-<select id="actividad" required disabled>
+<select id="actividad" required>
   <option value="">Seleccione actividad</option>
 </select>
 
@@ -70,12 +70,11 @@ button:disabled{background:#9ca3af}
   <option>William Orcasita</option>
 </select>
 
-<label>Foto ANTES </label>
+<label>Foto ANTES</label>
 <input type="file" id="fotoAntes" accept="image/*">
 
-<label>Foto DESPUÉS </label>
+<label>Foto DESPUÉS</label>
 <input type="file" id="fotoDespues" accept="image/*" required>
-
 
 <button type="submit" id="btnGuardar">
   <span id="btnTexto">Guardar</span>
@@ -117,21 +116,18 @@ const actividades = {
 
 falla.onchange = ()=>{
   actividad.innerHTML="<option value=''>Seleccione actividad</option>";
-  actividad.disabled=true;
   if(!falla.value) return;
   actividades[falla.value].forEach(a=>{
     const o=document.createElement("option");
     o.value=o.textContent=a;
     actividad.appendChild(o);
   });
-  actividad.disabled=false;
 };
 
-/* ================= ID PERSISTENTE ================= */
+/* ================= ID CORTO Y ESTABLE ================= */
 function generarID(){
-  return "MNT-" + Date.now().toString(36).slice(-8);
+  return "MNT-" + Date.now().toString(36).slice(-6);
 }
-
 function obtenerID(){
   let id = localStorage.getItem("id_actual");
   if(!id){
@@ -140,24 +136,23 @@ function obtenerID(){
   }
   return id;
 }
-
 function limpiarID(){
   localStorage.removeItem("id_actual");
 }
 
 /* ================= LEER FOTO ================= */
-function leer(f){
-  return new Promise(r=>{
-    if(!f) return r("");
+function leer(file){
+  return new Promise(res=>{
+    if(!file) return res("");
     const fr=new FileReader();
-    fr.onload=()=>r(fr.result.split(",")[1]);
-    fr.readAsDataURL(f);
+    fr.onload=()=>res(fr.result.split(",")[1]);
+    fr.readAsDataURL(file);
   });
 }
 
 /* ================= OFFLINE ================= */
 function guardarOffline(d){
-  const p=JSON.parse(localStorage.getItem("pendientes")||"[]");
+  const p = JSON.parse(localStorage.getItem("pendientes")||"[]");
   p.push(d);
   localStorage.setItem("pendientes",JSON.stringify(p));
 }
@@ -174,15 +169,15 @@ form.onsubmit = async e=>{
   msg.textContent="";
 
   const datos = {
-    id: obtenerID(), // 🔐 SIEMPRE EL MISMO
+    id: obtenerID(),
     fecha: fecha.value,
     direccion: direccion.value,
     falla: falla.value,
     actividad: actividad.value,
     observaciones: observaciones.value,
     tecnico: tecnico.value,
-    fotoAntes:"",
-    fotoDespues:""
+    fotoAntes: await leer(fotoAntes.files[0]),
+    fotoDespues: await leer(fotoDespues.files[0])
   };
 
   if(!navigator.onLine){
@@ -191,24 +186,19 @@ form.onsubmit = async e=>{
     return;
   }
 
-  datos.fotoAntes = await leer(fotoAntes.files[0]);
-  datos.fotoDespues = await leer(fotoDespues.files[0]);
-
   try{
     const r = await fetch(WEB_APP_URL,{
       method:"POST",
-      body:JSON.stringify(datos)
+      body: JSON.stringify(datos)
     });
 
     const t = await r.text();
-
-    if(t === "OK" || t === "DUPLICADO"){
-      limpiarID(); // 🔥 CLAVE
+    if(t==="OK" || t==="DUPLICADO"){
+      limpiarID();
       finalizar("✅ Registro guardado","green");
     }else{
-      throw new Error(t);
+      throw t;
     }
-
   }catch{
     guardarOffline(datos);
     finalizar("⚠️ Error, guardado local","orange");
@@ -225,10 +215,10 @@ window.addEventListener("online", async ()=>{
     try{
       const r = await fetch(WEB_APP_URL,{
         method:"POST",
-        body:JSON.stringify(d)
+        body: JSON.stringify(d)
       });
       const t = await r.text();
-      if(t !== "OK" && t !== "DUPLICADO"){
+      if(t!=="OK" && t!=="DUPLICADO"){
         restantes.push(d);
       }
     }catch{
@@ -244,7 +234,6 @@ function finalizar(t,c){
   msg.style.color=c;
   form.reset();
   actividad.innerHTML="<option value=''>Seleccione actividad</option>";
-  actividad.disabled=true;
   btnGuardar.disabled=false;
   btnTexto.textContent="Guardar";
   spinner.style.display="none";
@@ -257,7 +246,5 @@ if("serviceWorker" in navigator){
 }
 </script>
 
-
 </body>
 </html>
-
