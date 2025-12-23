@@ -1,258 +1,208 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Mantenimiento Semafórico</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#059669">
-
-<style>
-*{box-sizing:border-box}
-body{background:#0f172a;padding:15px;font-family:system-ui}
-.card{background:white;max-width:420px;margin:auto;padding:20px;border-radius:16px}
-label{font-weight:600;margin-top:12px;display:block}
-input,select,button{
-  width:100%;
-  padding:12px;
-  margin-top:6px;
-  border-radius:10px;
-  border:1px solid #d1d5db;
-}
-button{background:#059669;color:white;font-weight:bold;border:none}
-button:disabled{background:#9ca3af}
-#msg{text-align:center;margin-top:10px;font-weight:bold}
-</style>
+    <meta charset="UTF-8">
+    <title>Mantenimiento Semafórico Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#059669">
+    <style>
+        * { box-sizing: border-box; }
+        body { background: #0f172a; padding: 15px; font-family: system-ui, -apple-system, sans-serif; color: #1e293b; }
+        .card { background: white; max-width: 450px; margin: auto; padding: 25px; border-radius: 20px; shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; color: #0f172a; font-size: 1.5rem; text-align: center; }
+        label { font-weight: 600; margin-top: 15px; display: block; font-size: 0.9rem; }
+        input, select, textarea, button { width: 100%; padding: 12px; margin-top: 6px; border-radius: 10px; border: 1px solid #d1d5db; font-size: 16px; }
+        button { background: #059669; color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        button:disabled { background: #9ca3af; }
+        #msg { text-align: center; margin-top: 15px; font-weight: bold; padding: 10px; border-radius: 8px; }
+        .offline-alert { background: #f59e0b; color: white; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; display: none; font-size: 0.85rem; }
+        .gps-info { font-size: 0.75rem; color: #64748b; margin-top: 4px; }
+    </style>
 </head>
-
 <body>
 
 <div class="card">
-<div style="text-align:center;margin-bottom:10px">
-  <img src="icons/logo.png" style="max-width:120px">
-</div>
+    <div style="text-align:center; margin-bottom:15px">
+        <img src="icons/logo.png" style="max-width:100px" onerror="this.style.display='none'">
+    </div>
 
-<h2>🚦 Registro Mantenimiento</h2>
+    <div id="offlineAlert" class="offline-alert">⚠️ Tienes registros pendientes por subir</div>
 
-<form id="form">
+    <h2>🚦 Registro Mantenimiento</h2>
 
-<label>Fecha</label>
-<input type="date" id="fecha" required>
+    <form id="form">
+        <label>Fecha</label>
+        <input type="date" id="fecha" required>
 
-<label>Intersección</label>
-<input type="text" id="direccion" required>
+        <label>Intersección / Dirección</label>
+        <input type="text" id="direccion" placeholder="Ej: Calle 10 con Cra 5" required>
 
-<label>Tipo de falla</label>
-<select id="falla" required>
-  <option value="">Seleccione</option>
-  <option value="Lampara">Lámpara</option>
-  <option value="Cableado">Cableado</option>
-  <option value="Controlador">Controlador</option>
-  <option value="Estructural">Estructural</option>
-</select>
+        <label>Tipo de falla</label>
+        <select id="falla" required>
+            <option value="">Seleccione</option>
+            <option value="Lampara">Lámpara</option>
+            <option value="Cableado">Cableado</option>
+            <option value="Controlador">Controlador</option>
+            <option value="Estructural">Estructural</option>
+        </select>
 
-<label>Actividad realizada</label>
-<select id="actividad" required>
-  <option value="">Seleccione actividad</option>
-</select>
+        <label>Actividad realizada</label>
+        <select id="actividad" required>
+            <option value="">Seleccione actividad</option>
+        </select>
 
-<label>Observaciones</label>
-<input type="text" id="observaciones">
+        <label>Observaciones</label>
+        <textarea id="observaciones" rows="2"></textarea>
 
-<label>Técnico</label>
-<select id="tecnico" required>
-  <option value="">Seleccione</option>
-  <option>Guanerge Salcedo</option>
-  <option>Luis Gutierrez</option>
-  <option>Juan Bolaños</option>
-  <option>Jose Colmenares</option>
-  <option>William Orcasita</option>
-</select>
+        <label>Técnico</label>
+        <select id="tecnico" required>
+            <option value="">Seleccione</option>
+            <option>Guanerge Salcedo</option>
+            <option>Luis Gutierrez</option>
+            <option>Juan Bolaños</option>
+            <option>Jose Colmenares</option>
+            <option>William Orcasita</option>
+        </select>
 
-<label>Foto ANTES</label>
-<input type="file" id="fotoAntes" accept="image/*" capture="environment">
+        <label>Foto ANTES</label>
+        <input type="file" id="fotoAntes" accept="image/*" capture="camera">
 
-<label>Foto DESPUÉS</label>
-<input type="file" id="fotoDespues" accept="image/*" capture="environment" required>
+        <label>Foto DESPUÉS</label>
+        <input type="file" id="fotoDespues" accept="image/*" capture="camera" required>
 
-<button type="submit" id="btnGuardar">
-  <span id="btnTexto">Guardar</span>
-  <span id="spinner" style="display:none"> ⏳</span>
-</button>
+        <div id="gpsStatus" class="gps-info">📍 Buscando ubicación...</div>
 
-<div id="msg"></div>
-</form>
+        <button type="submit" id="btnGuardar">
+            <span id="btnTexto">Guardar Registro</span>
+            <span id="spinner" style="display:none"> ⏳</span>
+        </button>
+
+        <div id="msg"></div>
+    </form>
 </div>
 
 <script>
-/* ================= CONFIG ================= */
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzl-urybkcbcJx9U0YpdQ0LiGi_Wgslx0RZvkgctAI5gpm43Y7sYtRxHKDIYGYqY9k3/exec";
-let enviando = false;
+const WEB_APP_URL = "TU_URL_DE_APPS_SCRIPT_AQUI"; 
+let coords = "No obtenida";
 
-/* ================= ELEMENTOS ================= */
-const form = document.getElementById("form");
-const falla = document.getElementById("falla");
-const actividad = document.getElementById("actividad");
-const btnGuardar = document.getElementById("btnGuardar");
-const btnTexto = document.getElementById("btnTexto");
-const spinner = document.getElementById("spinner");
-const msg = document.getElementById("msg");
+/* === LÓGICA GPS === */
+navigator.geolocation.getCurrentPosition(
+    p => { coords = `${p.coords.latitude},${p.coords.longitude}`; document.getElementById("gpsStatus").textContent = "📍 Ubicación fijada"; },
+    () => { document.getElementById("gpsStatus").textContent = "📍 GPS no disponible"; }
+);
 
-const fecha = document.getElementById("fecha");
-const direccion = document.getElementById("direccion");
-const observaciones = document.getElementById("observaciones");
-const tecnico = document.getElementById("tecnico");
-const fotoAntes = document.getElementById("fotoAntes");
-const fotoDespues = document.getElementById("fotoDespues");
-
-/* ================= ACTIVIDADES ================= */
+/* === ACTIVIDADES DINÁMICAS === */
 const actividades = {
-  Lampara:["Vehicular","Peatonal"],
-  Cableado:["Vehicular","Peatonal","Acometida eléctrica"],
-  Controlador:["Tarjetas","Reinicio","Breaker","Comunicación","UPS","Fusible"],
-  Estructural:["Postes T1","Postes T2","Semáforos S1","Semáforos S2","Bases","Anclaje","Tornillos"]
+    Lampara:["Vehicular","Peatonal"],
+    Cableado:["Vehicular","Peatonal","Acometida eléctrica"],
+    Controlador:["Tarjetas","Reinicio","Breaker","Comunicación","UPS","Fusible"],
+    Estructural:["Postes T1","Postes T2","Semáforos S1","Semáforos S2","Bases","Anclaje","Tornillos"]
 };
 
-falla.onchange = ()=>{
-  actividad.innerHTML="<option value=''>Seleccione actividad</option>";
-  if(!falla.value) return;
-  actividades[falla.value].forEach(a=>{
-    const o=document.createElement("option");
-    o.value=o.textContent=a;
-    actividad.appendChild(o);
-  });
+document.getElementById("falla").onchange = (e) => {
+    const actSel = document.getElementById("actividad");
+    actSel.innerHTML = "<option value=''>Seleccione actividad</option>";
+    if(actividades[e.target.value]) {
+        actividades[e.target.value].forEach(a => {
+            let o = document.createElement("option"); o.value = o.textContent = a; actSel.appendChild(o);
+        });
+    }
 };
 
-/* ================= ID CORTO Y ESTABLE ================= */
-function generarID(){
-  return "MNT-" + Date.now().toString(36).slice(-6);
-}
-function obtenerID(){
-  let id = localStorage.getItem("id_actual");
-  if(!id){
-    id = generarID();
-    localStorage.setItem("id_actual", id);
-  }
-  return id;
-}
-function limpiarID(){
-  localStorage.removeItem("id_actual");
-}
-
-/* ================= LEER FOTO ================= */
-function leer(file){
-  return new Promise(res=>{
-    if(!file) return res("");
-    const fr=new FileReader();
-    fr.onload=()=>res(fr.result.split(",")[1]);
-    fr.readAsDataURL(file);
-  });
-}
-
-/* ================= OFFLINE ================= */
-function guardarOffline(d){
-  const p = JSON.parse(localStorage.getItem("pendientes")||"[]");
-  p.push(d);
-  localStorage.setItem("pendientes",JSON.stringify(p));
-}
-
-/* ================= SUBMIT ================= */
-form.onsubmit = async e=>{
-  e.preventDefault();
-  if(enviando) return;
-
-  enviando=true;
-  btnGuardar.disabled=true;
-  btnTexto.textContent="Enviando...";
-  spinner.style.display="inline";
-  msg.textContent="";
-
-  const datos = {
-    id: obtenerID(),
-    fecha: fecha.value,
-    direccion: direccion.value,
-    falla: falla.value,
-    actividad: actividad.value,
-    observaciones: observaciones.value,
-    tecnico: tecnico.value,
-    fotoAntes: await leer(fotoAntes.files[0]),
-    fotoDespues: await leer(fotoDespues.files[0])
-  };
-
-  if(!navigator.onLine){
-    guardarOffline(datos);
-    finalizar("📵 Guardado sin internet","orange");
-    return;
-  }
-
-  try{
-    const r = await fetch(WEB_APP_URL,{
-      method:"POST",
-      body: JSON.stringify(datos)
+/* === COMPRESIÓN DE IMAGEN === */
+async function procesarFoto(file) {
+    if(!file) return "";
+    return new Promise(res => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = e => {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                const MAX = 1000;
+                let w = img.width, h = img.height;
+                if (w > h && w > MAX) { h *= MAX/w; w = MAX; }
+                else if (h > MAX) { w *= MAX/h; h = MAX; }
+                canvas.width = w; canvas.height = h;
+                canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+                res(canvas.toDataURL("image/jpeg", 0.7).split(",")[1]);
+            };
+        };
     });
+}
 
-    const t = await r.text();
-    if(t==="OK" || t==="DUPLICADO"){
-      limpiarID();
-      finalizar("✅ Registro guardado","green");
-    }else{
-      throw t;
+/* === GESTIÓN OFFLINE === */
+function actualizarAlerta() {
+    const p = JSON.parse(localStorage.getItem("pendientes") || "[]");
+    document.getElementById("offlineAlert").style.display = p.length > 0 ? "block" : "none";
+}
+
+const form = document.getElementById("form");
+form.onsubmit = async e => {
+    e.preventDefault();
+    const btn = document.getElementById("btnGuardar");
+    btn.disabled = true;
+    document.getElementById("btnTexto").textContent = "Procesando...";
+    
+    const datos = {
+        id: "MNT-" + Date.now().toString(36),
+        fecha: document.getElementById("fecha").value,
+        direccion: document.getElementById("direccion").value,
+        falla: document.getElementById("falla").value,
+        actividad: document.getElementById("actividad").value,
+        observaciones: document.getElementById("observaciones").value,
+        tecnico: document.getElementById("tecnico").value,
+        coords: coords,
+        fotoAntes: await procesarFoto(document.getElementById("fotoAntes").files[0]),
+        fotoDespues: await procesarFoto(document.getElementById("fotoDespues").files[0])
+    };
+
+    if(!navigator.onLine) {
+        const p = JSON.parse(localStorage.getItem("pendientes") || "[]");
+        p.push(datos);
+        localStorage.setItem("pendientes", JSON.stringify(p));
+        finalizar("📵 Guardado local (sin internet)", "#f59e0b");
+    } else {
+        try {
+            const r = await fetch(WEB_APP_URL, { method:"POST", body: JSON.stringify(datos) });
+            const t = await r.text();
+            if(t === "OK") finalizar("✅ Enviado con éxito", "#059669");
+            else throw t;
+        } catch(e) {
+            const p = JSON.parse(localStorage.getItem("pendientes") || "[]");
+            p.push(datos);
+            localStorage.setItem("pendientes", JSON.stringify(p));
+            finalizar("⚠️ Error de red, guardado local", "#f59e0b");
+        }
     }
-  }catch{
-    guardarOffline(datos);
-    finalizar("⚠️ Error, guardado local","orange");
-  }
 };
 
-/* ================= REENVÍO OFFLINE ================= */
-window.addEventListener("online", async ()=>{
-  let p = JSON.parse(localStorage.getItem("pendientes")||"[]");
-  if(!p.length) return;
+function finalizar(m, c) {
+    const msg = document.getElementById("msg");
+    msg.textContent = m; msg.style.color = c;
+    form.reset();
+    btnGuardar.disabled = false;
+    document.getElementById("btnTexto").textContent = "Guardar Registro";
+    actualizarAlerta();
+}
 
-  const restantes=[];
-  for(const d of p){
-    try{
-      const r = await fetch(WEB_APP_URL,{
-        method:"POST",
-        body: JSON.stringify(d)
-      });
-      const t = await r.text();
-      if(t!=="OK" && t!=="DUPLICADO"){
-        restantes.push(d);
-      }
-    }catch{
-      restantes.push(d);
+window.addEventListener("online", async () => {
+    let p = JSON.parse(localStorage.getItem("pendientes") || "[]");
+    if(!p.length) return;
+    for(let i=0; i<p.length; i++) {
+        try {
+            const r = await fetch(WEB_APP_URL, { method:"POST", body: JSON.stringify(p[i]) });
+            if(await r.text() === "OK") p.splice(i, 1);
+        } catch(e) {}
     }
-  }
-  localStorage.setItem("pendientes",JSON.stringify(restantes));
+    localStorage.setItem("pendientes", JSON.stringify(p));
+    actualizarAlerta();
 });
 
-/* ================= FINALIZAR ================= */
-function finalizar(t,c){
-  msg.textContent = t;
-  msg.style.color = c;
-
-  form.reset();
-
-  // 🔥 CLAVE PARA ANDROID / PWA
-  fotoAntes.value = "";
-  fotoDespues.value = "";
-
-  actividad.innerHTML = "<option value=''>Seleccione actividad</option>";
-
-  btnGuardar.disabled = false;
-  btnTexto.textContent = "Guardar";
-  spinner.style.display = "none";
-  enviando = false;
-}
-
-
-/* ================= SERVICE WORKER ================= */
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("sw.js");
-}
+actualizarAlerta();
+if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
 </script>
-
 </body>
 </html>
