@@ -9,7 +9,7 @@
     <style>
         * { box-sizing: border-box; }
         body { background: #0f172a; padding: 15px; font-family: system-ui, -apple-system, sans-serif; color: #1e293b; }
-        .card { background: white; max-width: 450px; margin: auto; padding: 25px; border-radius: 20px; shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .card { background: white; max-width: 450px; margin: auto; padding: 25px; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         h2 { margin-top: 0; color: #0f172a; font-size: 1.5rem; text-align: center; }
         label { font-weight: 600; margin-top: 15px; display: block; font-size: 0.9rem; }
         input, select, textarea, button { width: 100%; padding: 12px; margin-top: 6px; border-radius: 10px; border: 1px solid #d1d5db; font-size: 16px; }
@@ -168,7 +168,7 @@ form.onsubmit = async e => {
         try {
             const r = await fetch(WEB_APP_URL, { method:"POST", body: JSON.stringify(datos) });
             const t = await r.text();
-            if(t === "OK") finalizar("✅ Enviado con éxito", "#059669");
+            if(t === "OK" || t === "DUPLICADO") finalizar("✅ Enviado con éxito", "#059669");
             else throw t;
         } catch(e) {
             const p = JSON.parse(localStorage.getItem("pendientes") || "[]");
@@ -183,45 +183,42 @@ function finalizar(m, c) {
     const msg = document.getElementById("msg");
     msg.textContent = m; msg.style.color = c;
     form.reset();
-    btnGuardar.disabled = false;
+    document.getElementById("actividad").innerHTML = "<option value=''>Seleccione actividad</option>";
+    document.getElementById("btnGuardar").disabled = false;
     document.getElementById("btnTexto").textContent = "Guardar Registro";
     actualizarAlerta();
 }
 
-window.addEventListener("online", async () => {
+/* REENVÍO AUTOMÁTICO MEJORADO */
+async function subirPendientes() {
     let p = JSON.parse(localStorage.getItem("pendientes") || "[]");
-    if (!p.length) return;
+    if (!p.length || !navigator.onLine) return;
 
-    console.log("Detectada conexión. Intentando subir " + p.length + " pendientes...");
-
-    // Creamos una copia para trabajar y evitar errores de índice al borrar
-    const pendientesActualizados = [...p];
-    const exitosos = [];
-
-    for (let i = 0; i < pendientesActualizados.length; i++) {
+    const restantes = [];
+    for (const item of p) {
         try {
             const r = await fetch(WEB_APP_URL, { 
                 method: "POST", 
-                body: JSON.stringify(pendientesActualizados[i]) 
+                body: JSON.stringify(item) 
             });
             const t = await r.text();
-            
-            // Si el servidor responde OK o DUPLICADO, lo consideramos procesado
-            if (t === "OK" || t === "DUPLICADO") {
-                exitosos.push(i);
+            // Si NO es OK ni DUPLICADO, lo conservamos para reintentar luego
+            if (t !== "OK" && t !== "DUPLICADO") {
+                restantes.push(item);
             }
         } catch (e) {
-            console.error("Error subiendo registro pendiente", e);
+            restantes.push(item); // Error de red, se queda en pendientes
         }
     }
-
-    // Filtramos los que NO fueron exitosos para mantenerlos en pendientes
-    const restantes = pendientesActualizados.filter((_, index) => !exitosos.includes(index));
     localStorage.setItem("pendientes", JSON.stringify(restantes));
     actualizarAlerta();
-});
+}
 
+window.addEventListener("online", subirPendientes);
 actualizarAlerta();
+// Intento inicial por si carga ya estando online con pendientes
+if(navigator.onLine) subirPendientes();
+
 if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
 </script>
 </body>
