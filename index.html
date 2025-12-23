@@ -71,10 +71,10 @@ button:disabled{background:#9ca3af}
 </select>
 
 <label>Foto ANTES</label>
-<input type="file" id="fotoAntes" accept="image/*">
+<input type="file" id="fotoAntes" accept="image/*" capture="environment">
 
 <label>Foto DESPUÉS</label>
-<input type="file" id="fotoDespues" accept="image/*" required>
+<input type="file" id="fotoDespues" accept="image/*" capture="environment" required>
 
 <button type="submit" id="btnGuardar">
   <span id="btnTexto">Guardar</span>
@@ -230,15 +230,23 @@ window.addEventListener("online", async ()=>{
 
 /* ================= FINALIZAR ================= */
 function finalizar(t,c){
-  msg.textContent=t;
-  msg.style.color=c;
+  msg.textContent = t;
+  msg.style.color = c;
+
   form.reset();
-  actividad.innerHTML="<option value=''>Seleccione actividad</option>";
-  btnGuardar.disabled=false;
-  btnTexto.textContent="Guardar";
-  spinner.style.display="none";
-  enviando=false;
+
+  // 🔥 CLAVE PARA ANDROID / PWA
+  fotoAntes.value = "";
+  fotoDespues.value = "";
+
+  actividad.innerHTML = "<option value=''>Seleccione actividad</option>";
+
+  btnGuardar.disabled = false;
+  btnTexto.textContent = "Guardar";
+  spinner.style.display = "none";
+  enviando = false;
 }
+
 
 /* ================= SERVICE WORKER ================= */
 if("serviceWorker" in navigator){
