@@ -126,9 +126,22 @@ falla.onchange = ()=>{
   actividad.disabled=false;
 };
 
-/* ================= ID ÚNICO ================= */
+/* ================= ID PERSISTENTE ================= */
 function generarID(){
   return "MNT-" + Date.now().toString(36).slice(-8);
+}
+
+function obtenerID(){
+  let id = localStorage.getItem("id_actual");
+  if(!id){
+    id = generarID();
+    localStorage.setItem("id_actual", id);
+  }
+  return id;
+}
+
+function limpiarID(){
+  localStorage.removeItem("id_actual");
 }
 
 /* ================= LEER FOTO ================= */
@@ -148,19 +161,6 @@ function guardarOffline(d){
   localStorage.setItem("pendientes",JSON.stringify(p));
 }
 
-/* ================= CONTROL DUPLICADOS ================= */
-function marcarEnviado(id){
-  const e = JSON.parse(localStorage.getItem("enviados") || "[]");
-  if(!e.includes(id)){
-    e.push(id);
-    localStorage.setItem("enviados", JSON.stringify(e));
-  }
-}
-function yaEnviado(id){
-  const e = JSON.parse(localStorage.getItem("enviados") || "[]");
-  return e.includes(id);
-}
-
 /* ================= SUBMIT ================= */
 form.onsubmit = async e=>{
   e.preventDefault();
@@ -173,7 +173,7 @@ form.onsubmit = async e=>{
   msg.textContent="";
 
   const datos = {
-    id: generarID(),
+    id: obtenerID(), // 🔐 SIEMPRE EL MISMO
     fecha: fecha.value,
     direccion: direccion.value,
     falla: falla.value,
@@ -194,12 +194,20 @@ form.onsubmit = async e=>{
   datos.fotoDespues = await leer(fotoDespues.files[0]);
 
   try{
-    await fetch(WEB_APP_URL,{
+    const r = await fetch(WEB_APP_URL,{
       method:"POST",
       body:JSON.stringify(datos)
     });
-    marcarEnviado(datos.id);
-    finalizar("✅ Registro enviado","green");
+
+    const t = await r.text();
+
+    if(t === "OK" || t === "DUPLICADO"){
+      limpiarID(); // 🔥 CLAVE
+      finalizar("✅ Registro guardado","green");
+    }else{
+      throw new Error(t);
+    }
+
   }catch{
     guardarOffline(datos);
     finalizar("⚠️ Error, guardado local","orange");
@@ -213,13 +221,15 @@ window.addEventListener("online", async ()=>{
 
   const restantes=[];
   for(const d of p){
-    if(yaEnviado(d.id)) continue;
     try{
-      await fetch(WEB_APP_URL,{
+      const r = await fetch(WEB_APP_URL,{
         method:"POST",
         body:JSON.stringify(d)
       });
-      marcarEnviado(d.id);
+      const t = await r.text();
+      if(t !== "OK" && t !== "DUPLICADO"){
+        restantes.push(d);
+      }
     }catch{
       restantes.push(d);
     }
@@ -245,6 +255,7 @@ if("serviceWorker" in navigator){
   navigator.serviceWorker.register("sw.js");
 }
 </script>
+
 
 </body>
 </html>
