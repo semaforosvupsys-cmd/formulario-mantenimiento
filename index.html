@@ -90,6 +90,22 @@ button:disabled{background:#9ca3af}
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwZbqPJsbS_0NWUguqAojgRciK9QOpeCTwopoA0w8qKx0awo9Pi3ZzIl5xrI0_CNC7h/exec";
 let enviando = false;
 
+/* ================= ELEMENTOS ================= */
+const form = document.getElementById("form");
+const falla = document.getElementById("falla");
+const actividad = document.getElementById("actividad");
+const btnGuardar = document.getElementById("btnGuardar");
+const btnTexto = document.getElementById("btnTexto");
+const spinner = document.getElementById("spinner");
+const msg = document.getElementById("msg");
+
+const fecha = document.getElementById("fecha");
+const direccion = document.getElementById("direccion");
+const observaciones = document.getElementById("observaciones");
+const tecnico = document.getElementById("tecnico");
+const fotoAntes = document.getElementById("fotoAntes");
+const fotoDespues = document.getElementById("fotoDespues");
+
 /* ================= ACTIVIDADES ================= */
 const actividades = {
   Lampara:["Vehicular","Peatonal"],
@@ -110,9 +126,9 @@ falla.onchange = ()=>{
   actividad.disabled=false;
 };
 
-/* ================= ID CORTO ================= */
+/* ================= ID ÚNICO ================= */
 function generarID(){
-  return "MNT-" + Date.now().toString(36).slice(-6);
+  return "MNT-" + Date.now().toString(36).slice(-8);
 }
 
 /* ================= LEER FOTO ================= */
@@ -130,6 +146,19 @@ function guardarOffline(d){
   const p=JSON.parse(localStorage.getItem("pendientes")||"[]");
   p.push(d);
   localStorage.setItem("pendientes",JSON.stringify(p));
+}
+
+/* ================= CONTROL DUPLICADOS ================= */
+function marcarEnviado(id){
+  const e = JSON.parse(localStorage.getItem("enviados") || "[]");
+  if(!e.includes(id)){
+    e.push(id);
+    localStorage.setItem("enviados", JSON.stringify(e));
+  }
+}
+function yaEnviado(id){
+  const e = JSON.parse(localStorage.getItem("enviados") || "[]");
+  return e.includes(id);
 }
 
 /* ================= SUBMIT ================= */
@@ -152,18 +181,15 @@ form.onsubmit = async e=>{
     observaciones: observaciones.value,
     tecnico: tecnico.value,
     fotoAntes:"",
-    fotoDespues:"",
-    sinFotos: !navigator.onLine
+    fotoDespues:""
   };
 
-  /* 📵 SIN INTERNET → SOLO TEXTO */
   if(!navigator.onLine){
     guardarOffline(datos);
     finalizar("📵 Guardado sin internet","orange");
     return;
   }
 
-  /* 📶 CON INTERNET → CON FOTOS */
   datos.fotoAntes = await leer(fotoAntes.files[0]);
   datos.fotoDespues = await leer(fotoDespues.files[0]);
 
@@ -172,6 +198,7 @@ form.onsubmit = async e=>{
       method:"POST",
       body:JSON.stringify(datos)
     });
+    marcarEnviado(datos.id);
     finalizar("✅ Registro enviado","green");
   }catch{
     guardarOffline(datos);
@@ -179,18 +206,25 @@ form.onsubmit = async e=>{
   }
 };
 
-/* ================= REENVÍO ================= */
+/* ================= REENVÍO OFFLINE ================= */
 window.addEventListener("online", async ()=>{
-  let p=JSON.parse(localStorage.getItem("pendientes")||"[]");
+  let p = JSON.parse(localStorage.getItem("pendientes")||"[]");
   if(!p.length) return;
 
-  const r=[];
+  const restantes=[];
   for(const d of p){
+    if(yaEnviado(d.id)) continue;
     try{
-      await fetch(WEB_APP_URL,{method:"POST",body:JSON.stringify(d)});
-    }catch{ r.push(d); }
+      await fetch(WEB_APP_URL,{
+        method:"POST",
+        body:JSON.stringify(d)
+      });
+      marcarEnviado(d.id);
+    }catch{
+      restantes.push(d);
+    }
   }
-  localStorage.setItem("pendientes",JSON.stringify(r));
+  localStorage.setItem("pendientes",JSON.stringify(restantes));
 });
 
 /* ================= FINALIZAR ================= */
@@ -214,3 +248,4 @@ if("serviceWorker" in navigator){
 
 </body>
 </html>
+
