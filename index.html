@@ -134,10 +134,8 @@
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzUIkBk8Ymgm1YNSavmykxfeLd_ifSyRg5tZDexDrFptuqsVsqQ3hhYW6T91Zr8Tta-/exec"; 
 let coords = "Buscando GPS...";
 
-// Obtener GPS
 navigator.geolocation.getCurrentPosition(p => coords = `${p.coords.latitude},${p.coords.longitude}`);
 
-// Actividades dinámicas
 const diccionarioActividades = {
     "Lampara": ["Vehicular", "Peatonal"],
     "Cableado": ["Vehicular", "Peatonal", "Acometida eléctrica"],
@@ -146,7 +144,6 @@ const diccionarioActividades = {
     "Radar de Velocidad": ["Baterías", "Panel Solar", "Panel Electrónico"]
 };
 
-// Cambio dinámico de actividades
 document.getElementById("falla").onchange = (e) => {
     const actSel = document.getElementById("actividad");
     const falla = e.target.value;
@@ -162,9 +159,7 @@ function abrirForm(tipo) {
     document.getElementById("menuPrincipal").style.display = "none";
     document.getElementById("pantallaForm").classList.add("active");
     document.getElementById("tipoRegistro").value = tipo;
-    document.getElementById("tituloSeccion").textContent = tipo.replace('_', ' ');
-
-    // Mostrar/Ocultar campos según el botón
+    document.getElementById("tituloSeccion").textContent = tipo.replace(/_/g, ' ');
     document.getElementById("bloqueFallas").style.display = (tipo !== "PREVENTIVO") ? "block" : "none";
     document.getElementById("bloqueActividad").style.display = (tipo === "REPARACION") ? "block" : "none";
     document.getElementById("bloquePrioridad").style.display = (tipo === "INVENTARIO_FALLA") ? "block" : "none";
@@ -177,7 +172,6 @@ function irAlMenu() {
     document.getElementById("menuPrincipal").style.display = "block";
 }
 
-// Compresión de fotos
 async function procesarFoto(file) {
     if(!file) return "";
     return new Promise(res => {
@@ -200,13 +194,17 @@ async function procesarFoto(file) {
     });
 }
 
-// Envío de Formulario
+function actualizarAlerta() {
+    const p = JSON.parse(localStorage.getItem("vup_pendientes") || "[]");
+    document.getElementById("offlineAlert").style.display = p.length > 0 ? "block" : "none";
+}
+
 document.getElementById("mainForm").onsubmit = async e => {
     e.preventDefault();
     const btn = document.getElementById("btnGuardar");
     const msg = document.getElementById("msgStatus");
     btn.disabled = true;
-    msg.textContent = "⏳ Procesando envío...";
+    msg.textContent = "⏳ Procesando...";
 
     const datos = {
         id: "ID-" + Date.now().toString(36).toUpperCase(),
@@ -228,22 +226,60 @@ document.getElementById("mainForm").onsubmit = async e => {
         foto2: await procesarFoto(document.getElementById("foto2").files[0])
     };
 
-    try {
-        const res = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify(datos) });
-        const txt = await res.text();
-        if(txt === "OK") {
-            msg.style.color = "green";
-            msg.textContent = "✅ ¡Enviado con éxito!";
-            setTimeout(() => location.reload(), 2000);
-        } else {
-            throw "Error servidor";
+    if(!navigator.onLine) {
+        guardarLocal(datos);
+        finalizarEnvio("📵 Guardado en el teléfono (Sin Internet)", "#f59e0b");
+    } else {
+        try {
+            const res = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify(datos) });
+            const txt = await res.text();
+            if(txt === "OK") finalizarEnvio("✅ ¡Enviado con éxito!", "#059669");
+            else throw "Error";
+        } catch(err) {
+            guardarLocal(datos);
+            finalizarEnvio("⚠️ Error de red, guardado localmente", "#f59e0b");
         }
-    } catch(err) {
-        msg.style.color = "orange";
-        msg.textContent = "📵 Error de red, se guardará localmente (Pendiente implementarse PWA)";
-        btn.disabled = false;
     }
 };
+
+function guardarLocal(d) {
+    const p = JSON.parse(localStorage.getItem("vup_pendientes") || "[]");
+    p.push(d);
+    localStorage.setItem("vup_pendientes", JSON.stringify(p));
+}
+
+function finalizarEnvio(m, c) {
+    const msg = document.getElementById("msgStatus");
+    msg.style.color = c;
+    msg.textContent = m;
+    setTimeout(() => {
+        document.getElementById("mainForm").reset();
+        irAlMenu();
+        msg.textContent = "";
+        document.getElementById("btnGuardar").disabled = false;
+        actualizarAlerta();
+    }, 2500);
+}
+
+// Sincronización automática al volver el internet
+window.addEventListener("online", async () => {
+    let p = JSON.parse(localStorage.getItem("vup_pendientes") || "[]");
+    if (!p.length) return;
+    for (let i = 0; i < p.length; i++) {
+        try {
+            const r = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify(p[i]) });
+            if (await r.text() === "OK") {
+                p.splice(i, 1);
+                i--;
+            }
+        } catch (e) {}
+    }
+    localStorage.setItem("vup_pendientes", JSON.stringify(p));
+    actualizarAlerta();
+});
+
+actualizarAlerta();
+if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
 </script>
 </body>
 </html>
