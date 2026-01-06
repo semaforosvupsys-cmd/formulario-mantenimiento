@@ -2,115 +2,182 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mantenimiento Semafórico Pro</title>
+    <title>Mantenimiento Semafórico VUP</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#059669">
+    <meta name="theme-color" content="#0f172a">
     <style>
-        * { box-sizing: border-box; }
-        body { background: #0f172a; padding: 15px; font-family: system-ui, -apple-system, sans-serif; color: #1e293b; }
-        .card { background: white; max-width: 450px; margin: auto; padding: 25px; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        h2 { margin-top: 0; color: #0f172a; font-size: 1.5rem; text-align: center; }
-        label { font-weight: 600; margin-top: 15px; display: block; font-size: 0.9rem; }
-        input, select, textarea, button { width: 100%; padding: 12px; margin-top: 6px; border-radius: 10px; border: 1px solid #d1d5db; font-size: 16px; }
-        button { background: #059669; color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 20px; transition: 0.3s; }
-        button:disabled { background: #9ca3af; }
-        #msg { text-align: center; margin-top: 15px; font-weight: bold; padding: 10px; border-radius: 8px; }
-        .offline-alert { background: #f59e0b; color: white; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; display: none; font-size: 0.85rem; }
-        .gps-info { font-size: 0.75rem; color: #64748b; margin-top: 4px; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #0f172a; color: #fff; padding: 15px; margin: 0; }
+        .container { max-width: 500px; margin: auto; }
+        
+        /* Menú Principal */
+        .menu-grid { display: grid; gap: 15px; margin-top: 20px; }
+        .menu-btn { 
+            padding: 25px; border-radius: 15px; border: none; font-weight: bold; 
+            font-size: 1.1rem; cursor: pointer; color: white; text-align: left;
+            transition: 0.3s; display: flex; align-items: center; justify-content: space-between;
+        }
+        .menu-btn:active { transform: scale(0.98); }
+        .btn-reparacion { background: #059669; border-left: 10px solid #047857; }
+        .btn-pendiente { background: #3b82f6; border-left: 10px solid #1d4ed8; }
+        .btn-preventivo { background: #8b5cf6; border-left: 10px solid #6d28d9; }
+
+        /* Formulario */
+        .card { background: white; color: #1e293b; padding: 20px; border-radius: 20px; display: none; margin-top: 10px; }
+        .active { display: block; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        label { display: block; margin-top: 12px; font-weight: bold; font-size: 0.9rem; color: #475569; }
+        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 16px; }
+        
+        .btn-send { background: #0f172a; color: white; border: none; padding: 16px; width: 100%; border-radius: 10px; margin-top: 25px; font-weight: bold; cursor: pointer; }
+        .btn-back { background: #f1f5f9; color: #475569; border: none; padding: 10px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; font-weight: bold; }
+        
+        .check-item { display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 10px; border-radius: 8px; margin-top: 5px; border: 1px solid #e2e8f0; }
+        .check-item input { width: auto; margin: 0; }
+        .offline-alert { background: #f59e0b; color: white; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; display: none; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div style="text-align:center; margin-bottom:15px">
-        <img src="icons/logo.png" style="max-width:100px" onerror="this.style.display='none'">
+<div class="container">
+    <div id="offlineAlert" class="offline-alert">⚠️ Tienes reportes pendientes por subir</div>
+
+    <div id="menuPrincipal">
+        <h2 style="text-align: center; margin-bottom: 30px;">Gestión de Tránsito</h2>
+        <div class="menu-grid">
+            <button class="menu-btn btn-reparacion" onclick="abrirForm('REPARACION')">🛠️ REGISTRAR ARREGLO <span>→</span></button>
+            <button class="menu-btn btn-pendiente" onclick="abrirForm('INVENTARIO_FALLA')">📝 INVENTARIO DE FALLA <span>→</span></button>
+            <button class="menu-btn btn-preventivo" onclick="abrirForm('PREVENTIVO')">✅ MANT. PREVENTIVO <span>→</span></button>
+        </div>
     </div>
 
-    <div id="offlineAlert" class="offline-alert">⚠️ Tienes registros pendientes por subir</div>
+    <div id="pantallaForm" class="card">
+        <button class="btn-back" onclick="irAlMenu()">← Volver al Menú</button>
+        <h2 id="tituloSeccion" style="margin:0; color: #0f172a;"></h2>
+        
+        <form id="mainForm">
+            <input type="hidden" id="tipoRegistro">
 
-    <h2>🚦 Registro Mantenimiento</h2>
+            <label>Fecha del Trabajo</label>
+            <input type="date" id="fecha" required>
 
-    <form id="form">
-        <label>Fecha</label>
-        <input type="date" id="fecha" required>
+            <label>Técnico</label>
+            <select id="tecnico" required>
+                <option value="">Seleccione Técnico</option>
+                <option>Luis Gutierrez</option>
+                <option>Guanerge Salcedo</option>
+                <option>Juan Bolaños</option>
+                <option>Jose Colmenares</option>
+                <option>William Orcasita</option>
+            </select>
 
-        <label>Intersección / Dirección</label>
-        <input type="text" id="direccion" placeholder="Ej: Calle 10 con Cra 5" required>
+            <label>Ubicación / Intersección</label>
+            <input type="text" id="direccion" placeholder="Ej: Av. Fundación con Cra 12" required>
 
-        <label>Tipo de falla</label>
-        <select id="falla" required>
-            <option value="">Seleccione</option>
-            <option value="Lampara">Lámpara</option>
-            <option value="Cableado">Cableado</option>
-            <option value="Controlador">Controlador</option>
-            <option value="Estructural">Estructural</option>
-        </select>
+            <div id="bloqueFallas">
+                <label>Tipo de Falla</label>
+                <select id="falla">
+                    <option value="">Seleccione Falla</option>
+                    <option value="Lampara">Lámpara</option>
+                    <option value="Cableado">Cableado</option>
+                    <option value="Controlador">Controlador</option>
+                    <option value="Estructural">Estructural</option>
+                    <option value="Radar de Velocidad">Radar de Velocidad</option>
+                </select>
 
-        <label>Actividad realizada</label>
-        <select id="actividad" required>
-            <option value="">Seleccione actividad</option>
-        </select>
+                <div id="bloqueActividad">
+                    <label>Actividad Realizada</label>
+                    <select id="actividad">
+                        <option value="">Seleccione Actividad</option>
+                    </select>
+                </div>
+            </div>
 
-        <label>Observaciones</label>
-        <textarea id="observaciones" rows="2"></textarea>
+            <div id="bloquePrioridad" style="display:none">
+                <label>Prioridad del Arreglo</label>
+                <select id="prioridad">
+                    <option value="Baja">Baja</option>
+                    <option value="Media">Media</option>
+                    <option value="ALTA / URGENTE">ALTA / URGENTE</option>
+                </select>
+            </div>
 
-        <label>Técnico</label>
-        <select id="tecnico" required>
-            <option value="">Seleccione</option>
-            <option>Guanerge Salcedo</option>
-            <option>Luis Gutierrez</option>
-            <option>Juan Bolaños</option>
-            <option>Jose Colmenares</option>
-            <option>William Orcasita</option>
-        </select>
+            <div id="bloquePreventivo" style="display:none">
+                <label>Checklist de Rutina</label>
+                <div class="check-item"><input type="checkbox" id="chkLimpieza"> Limpieza de ópticas</div>
+                <div class="check-item"><input type="checkbox" id="chkAjuste"> Ajuste de tornillería</div>
+                <div class="check-item"><input type="checkbox" id="chkVoltaje"> Medición de Voltaje</div>
+            </div>
 
-        <label>Foto ANTES</label>
-        <input type="file" id="fotoAntes" accept="image/*" capture="camera">
+            <label>Observaciones</label>
+            <textarea id="observaciones" rows="2" placeholder="Notas adicionales..."></textarea>
 
-        <label>Foto DESPUÉS</label>
-        <input type="file" id="fotoDespues" accept="image/*" capture="camera" required>
+            <div id="bloqueFotos">
+                <label>Foto Antes / Evidencia</label>
+                <input type="file" id="foto1" accept="image/*" capture="camera">
+                
+                <div id="foto2Contenedor">
+                    <label>Foto Después (Arreglo Terminado)</label>
+                    <input type="file" id="foto2" accept="image/*" capture="camera">
+                </div>
+            </div>
 
-        <div id="gpsStatus" class="gps-info">📍 Buscando ubicación...</div>
-
-        <button type="submit" id="btnGuardar">
-            <span id="btnTexto">Guardar Registro</span>
-            <span id="spinner" style="display:none"> ⏳</span>
-        </button>
-
-        <div id="msg"></div>
-    </form>
+            <button type="submit" class="btn-send" id="btnGuardar">GUARDAR REGISTRO</button>
+            <div id="msgStatus" style="text-align:center; margin-top:15px; font-weight:bold"></div>
+        </form>
+    </div>
 </div>
 
 <script>
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzUIkBk8Ymgm1YNSavmykxfeLd_ifSyRg5tZDexDrFptuqsVsqQ3hhYW6T91Zr8Tta-/exec"; 
-let coords = "No obtenida";
+let coords = "Buscando GPS...";
 
-/* === LÓGICA GPS === */
-navigator.geolocation.getCurrentPosition(
-    p => { coords = `${p.coords.latitude},${p.coords.longitude}`; document.getElementById("gpsStatus").textContent = "📍 Ubicación fijada"; },
-    () => { document.getElementById("gpsStatus").textContent = "📍 GPS no disponible"; }
-);
+// Obtener GPS
+navigator.geolocation.getCurrentPosition(p => coords = `${p.coords.latitude},${p.coords.longitude}`);
 
-/* === ACTIVIDADES DINÁMICAS === */
-const actividades = {
-    Lampara:["Vehicular","Peatonal"],
-    Cableado:["Vehicular","Peatonal","Acometida eléctrica"],
-    Controlador:["Tarjetas","Reinicio","Breaker","Comunicación","UPS","Fusible"],
-    Estructural:["Postes T1","Postes T2","Semáforos S1","Semáforos S2","Bases","Anclaje","Tornillos"]
+// Actividades dinámicas
+const diccionarioActividades = {
+    "Lampara": ["Vehicular", "Peatonal"],
+    "Cableado": ["Vehicular", "Peatonal", "Acometida eléctrica"],
+    "Controlador": ["Tarjetas", "Reinicio", "Breaker", "Comunicación", "UPS", "Fusible"],
+    "Estructural": ["Postes T1", "Postes T2", "Semáforos S1", "Semáforos S2", "Bases", "Anclaje", "Tornillos"],
+    "Radar de Velocidad": ["Baterías", "Panel Solar", "Panel Electrónico"]
 };
 
+// Cambio dinámico de actividades
 document.getElementById("falla").onchange = (e) => {
     const actSel = document.getElementById("actividad");
-    actSel.innerHTML = "<option value=''>Seleccione actividad</option>";
-    if(actividades[e.target.value]) {
-        actividades[e.target.value].forEach(a => {
+    const falla = e.target.value;
+    actSel.innerHTML = "<option value=''>Seleccione Actividad</option>";
+    if(diccionarioActividades[falla]) {
+        diccionarioActividades[falla].forEach(a => {
             let o = document.createElement("option"); o.value = o.textContent = a; actSel.appendChild(o);
         });
     }
 };
 
-/* === COMPRESIÓN DE IMAGEN === */
+function abrirForm(tipo) {
+    document.getElementById("menuPrincipal").style.display = "none";
+    document.getElementById("pantallaForm").classList.add("active");
+    document.getElementById("tipoRegistro").value = tipo;
+    document.getElementById("tituloSeccion").textContent = tipo.replace('_', ' ');
+
+    // Mostrar/Ocultar campos según el botón
+    document.getElementById("bloqueFallas").style.display = (tipo !== "PREVENTIVO") ? "block" : "none";
+    document.getElementById("bloqueActividad").style.display = (tipo === "REPARACION") ? "block" : "none";
+    document.getElementById("bloquePrioridad").style.display = (tipo === "INVENTARIO_FALLA") ? "block" : "none";
+    document.getElementById("bloquePreventivo").style.display = (tipo === "PREVENTIVO") ? "block" : "none";
+    document.getElementById("foto2Contenedor").style.display = (tipo === "INVENTARIO_FALLA") ? "none" : "block";
+}
+
+function irAlMenu() {
+    document.getElementById("pantallaForm").classList.remove("active");
+    document.getElementById("menuPrincipal").style.display = "block";
+}
+
+// Compresión de fotos
 async function procesarFoto(file) {
     if(!file) return "";
     return new Promise(res => {
@@ -133,93 +200,50 @@ async function procesarFoto(file) {
     });
 }
 
-/* === GESTIÓN OFFLINE === */
-function actualizarAlerta() {
-    const p = JSON.parse(localStorage.getItem("pendientes") || "[]");
-    document.getElementById("offlineAlert").style.display = p.length > 0 ? "block" : "none";
-}
-
-const form = document.getElementById("form");
-form.onsubmit = async e => {
+// Envío de Formulario
+document.getElementById("mainForm").onsubmit = async e => {
     e.preventDefault();
     const btn = document.getElementById("btnGuardar");
+    const msg = document.getElementById("msgStatus");
     btn.disabled = true;
-    document.getElementById("btnTexto").textContent = "Procesando...";
-    
+    msg.textContent = "⏳ Procesando envío...";
+
     const datos = {
-        id: "MNT-" + Date.now().toString(36),
+        id: "ID-" + Date.now().toString(36).toUpperCase(),
+        tipo: document.getElementById("tipoRegistro").value,
         fecha: document.getElementById("fecha").value,
+        tecnico: document.getElementById("tecnico").value,
         direccion: document.getElementById("direccion").value,
         falla: document.getElementById("falla").value,
         actividad: document.getElementById("actividad").value,
+        prioridad: document.getElementById("prioridad").value,
         observaciones: document.getElementById("observaciones").value,
-        tecnico: document.getElementById("tecnico").value,
         coords: coords,
-        fotoAntes: await procesarFoto(document.getElementById("fotoAntes").files[0]),
-        fotoDespues: await procesarFoto(document.getElementById("fotoDespues").files[0])
+        preventivo: {
+            limpieza: document.getElementById("chkLimpieza").checked ? "SI" : "NO",
+            ajuste: document.getElementById("chkAjuste").checked ? "SI" : "NO",
+            voltaje: document.getElementById("chkVoltaje").checked ? "SI" : "NO"
+        },
+        foto1: await procesarFoto(document.getElementById("foto1").files[0]),
+        foto2: await procesarFoto(document.getElementById("foto2").files[0])
     };
 
-    if(!navigator.onLine) {
-        const p = JSON.parse(localStorage.getItem("pendientes") || "[]");
-        p.push(datos);
-        localStorage.setItem("pendientes", JSON.stringify(p));
-        finalizar("📵 Guardado local (sin internet)", "#f59e0b");
-    } else {
-        try {
-            const r = await fetch(WEB_APP_URL, { method:"POST", body: JSON.stringify(datos) });
-            const t = await r.text();
-            if(t === "OK" || t === "DUPLICADO") finalizar("✅ Enviado con éxito", "#059669");
-            else throw t;
-        } catch(e) {
-            const p = JSON.parse(localStorage.getItem("pendientes") || "[]");
-            p.push(datos);
-            localStorage.setItem("pendientes", JSON.stringify(p));
-            finalizar("⚠️ Error de red, guardado local", "#f59e0b");
+    try {
+        const res = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify(datos) });
+        const txt = await res.text();
+        if(txt === "OK") {
+            msg.style.color = "green";
+            msg.textContent = "✅ ¡Enviado con éxito!";
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            throw "Error servidor";
         }
+    } catch(err) {
+        msg.style.color = "orange";
+        msg.textContent = "📵 Error de red, se guardará localmente (Pendiente implementarse PWA)";
+        btn.disabled = false;
     }
 };
-
-function finalizar(m, c) {
-    const msg = document.getElementById("msg");
-    msg.textContent = m; msg.style.color = c;
-    form.reset();
-    document.getElementById("actividad").innerHTML = "<option value=''>Seleccione actividad</option>";
-    document.getElementById("btnGuardar").disabled = false;
-    document.getElementById("btnTexto").textContent = "Guardar Registro";
-    actualizarAlerta();
-}
-
-/* REENVÍO AUTOMÁTICO MEJORADO */
-async function subirPendientes() {
-    let p = JSON.parse(localStorage.getItem("pendientes") || "[]");
-    if (!p.length || !navigator.onLine) return;
-
-    const restantes = [];
-    for (const item of p) {
-        try {
-            const r = await fetch(WEB_APP_URL, { 
-                method: "POST", 
-                body: JSON.stringify(item) 
-            });
-            const t = await r.text();
-            // Si NO es OK ni DUPLICADO, lo conservamos para reintentar luego
-            if (t !== "OK" && t !== "DUPLICADO") {
-                restantes.push(item);
-            }
-        } catch (e) {
-            restantes.push(item); // Error de red, se queda en pendientes
-        }
-    }
-    localStorage.setItem("pendientes", JSON.stringify(restantes));
-    actualizarAlerta();
-}
-
-window.addEventListener("online", subirPendientes);
-actualizarAlerta();
-// Intento inicial por si carga ya estando online con pendientes
-if(navigator.onLine) subirPendientes();
-
-if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
 </script>
 </body>
 </html>
