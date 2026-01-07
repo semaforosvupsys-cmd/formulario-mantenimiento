@@ -146,6 +146,15 @@
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzUIkBk8Ymgm1YNSavmykxfeLd_ifSyRg5tZDexDrFptuqsVsqQ3hhYW6T91Zr8Tta-/exec";
 let maestra = [];
 
+/* --- REGISTRO DEL SERVICE WORKER (Para Instalación) --- */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/sw.js')
+      .then(reg => console.log('Service Worker registrado con éxito'))
+      .catch(err => console.log('Error al registrar Service Worker:', err));
+  });
+}
+
 function irAlMenu() {
     document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
     document.getElementById('seccionMenu').style.display = 'block';
@@ -157,7 +166,6 @@ function abrirForm(tipo) {
     document.getElementById('tipoRegistro').value = tipo;
     document.getElementById('tituloForm').textContent = tipo.replace(/_/g, ' ');
 
-    // Lógica de visibilidad restaurada
     document.getElementById("bloqueFallas").style.display = (tipo !== "PREVENTIVO") ? "block" : "none";
     document.getElementById("bloqueActividad").style.display = (tipo === "REPARACION") ? "block" : "none";
     document.getElementById("bloquePrioridad").style.display = (tipo === "INVENTARIO_FALLA") ? "block" : "none";
