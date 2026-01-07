@@ -35,7 +35,7 @@
         .btn-back { background: #f1f5f9; color: #475569; border: none; padding: 10px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; font-weight: bold; }
         
         .check-item { display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 10px; border-radius: 8px; margin-top: 5px; border: 1px solid #e2e8f0; }
-        .check-item input { width: auto; margin: 0; }
+        .check-item input { width: auto; margin: 0; height: 20px; width: 20px; }
         .offline-alert { background: #f59e0b; color: white; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; display: none; }
     </style>
 </head>
@@ -105,10 +105,15 @@
             </div>
 
             <div id="bloquePreventivo" style="display:none">
-                <label>Checklist de Rutina</label>
-                <div class="check-item"><input type="checkbox" id="chkLimpieza"> Limpieza de ópticas</div>
-                <div class="check-item"><input type="checkbox" id="chkAjuste"> Ajuste de tornillería</div>
-                <div class="check-item"><input type="checkbox" id="chkVoltaje"> Medición de Voltaje</div>
+                <label>Rutinas Realizadas</label>
+                <div class="check-item"><input type="checkbox" class="chk-prev" value="Limpieza de lamparas"> Limpieza de lámparas</div>
+                <div class="check-item"><input type="checkbox" class="chk-prev" value="Limpieza de semáforos"> Limpieza de semáforos</div>
+                <div class="check-item"><input type="checkbox" class="chk-prev" value="Limpieza de postes"> Limpieza de postes</div>
+                <div class="check-item"><input type="checkbox" class="chk-prev" value="Limpieza de controlador"> Limpieza de controlador</div>
+                <div class="check-item"><input type="checkbox" class="chk-prev" value="Ajustes de tornillería"> Ajustes de tornillería</div>
+                <div class="check-item"><input type="checkbox" class="chk-prev" value="Cambio de cableado"> Cambio de cableado</div>
+                <div class="check-item"><input type="checkbox" class="chk-prev" value="Pintura"> Pintura</div>
+                <div class="check-item"><input type="checkbox" class="chk-prev" value="Soldadura"> Soldadura</div>
             </div>
 
             <label>Observaciones</label>
@@ -160,6 +165,10 @@ function abrirForm(tipo) {
     document.getElementById("pantallaForm").classList.add("active");
     document.getElementById("tipoRegistro").value = tipo;
     document.getElementById("tituloSeccion").textContent = tipo.replace(/_/g, ' ');
+    
+    // Limpiar checkboxes previos
+    document.querySelectorAll('.chk-prev').forEach(cb => cb.checked = false);
+
     document.getElementById("bloqueFallas").style.display = (tipo !== "PREVENTIVO") ? "block" : "none";
     document.getElementById("bloqueActividad").style.display = (tipo === "REPARACION") ? "block" : "none";
     document.getElementById("bloquePrioridad").style.display = (tipo === "INVENTARIO_FALLA") ? "block" : "none";
@@ -206,6 +215,10 @@ document.getElementById("mainForm").onsubmit = async e => {
     btn.disabled = true;
     msg.textContent = "⏳ Procesando...";
 
+    // RECOPILAR ACTIVIDADES PREVENTIVAS EN UN SOLO TEXTO
+    const checks = document.querySelectorAll('.chk-prev:checked');
+    let listaPreventivos = Array.from(checks).map(cb => cb.value).join(", ");
+
     const datos = {
         id: "ID-" + Date.now().toString(36).toUpperCase(),
         tipo: document.getElementById("tipoRegistro").value,
@@ -217,18 +230,15 @@ document.getElementById("mainForm").onsubmit = async e => {
         prioridad: document.getElementById("prioridad").value,
         observaciones: document.getElementById("observaciones").value,
         coords: coords,
-        preventivo: {
-            limpieza: document.getElementById("chkLimpieza").checked ? "SI" : "NO",
-            ajuste: document.getElementById("chkAjuste").checked ? "SI" : "NO",
-            voltaje: document.getElementById("chkVoltaje").checked ? "SI" : "NO"
-        },
+        // Se envía como campo unificado
+        actividad_preventiva: listaPreventivos,
         foto1: await procesarFoto(document.getElementById("foto1").files[0]),
         foto2: await procesarFoto(document.getElementById("foto2").files[0])
     };
 
     if(!navigator.onLine) {
         guardarLocal(datos);
-        finalizarEnvio("📵 Guardado en el teléfono (Sin Internet)", "#f59e0b");
+        finalizarEnvio("📵 Guardado localmente (Sin Internet)", "#f59e0b");
     } else {
         try {
             const res = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify(datos) });
@@ -237,7 +247,7 @@ document.getElementById("mainForm").onsubmit = async e => {
             else throw "Error";
         } catch(err) {
             guardarLocal(datos);
-            finalizarEnvio("⚠️ Error de red, guardado localmente", "#f59e0b");
+            finalizarEnvio("⚠️ Error de envío, guardado localmente", "#f59e0b");
         }
     }
 };
@@ -261,7 +271,6 @@ function finalizarEnvio(m, c) {
     }, 2500);
 }
 
-// Sincronización automática al volver el internet
 window.addEventListener("online", async () => {
     let p = JSON.parse(localStorage.getItem("vup_pendientes") || "[]");
     if (!p.length) return;
