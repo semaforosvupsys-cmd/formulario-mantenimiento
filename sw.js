@@ -1,46 +1,71 @@
-const CACHE_NAME = "vup-v11"; // Incrementamos versión para limpiar errores previos
+// Nombre de la caché - incrementamos a v13 para forzar la actualización en los celulares
+const CACHE_NAME = "vup-v13";
+
+// Lista de archivos necesarios para que la App sea instalable y funcione offline
+// Usamos rutas completas de GitHub para asegurar que el celular los encuentre
 const ASSETS = [
-  "./",
-  "./index.html",
-  "./manifest.json", // Importante: Volvemos a incluir el archivo físico
-  "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/index.html",
+  "https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/manifest.json",
+  "https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/icons/icon-192.png",
+  "https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/icons/icon-512.png"
 ];
 
-// Instalación: Guarda los archivos en el celular para que abra rápido
-self.addEventListener("install", e => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(c => {
-      console.log("Instalando activos en caché...");
-      return c.addAll(ASSETS);
+// 1. INSTALACIÓN: Se ejecuta la primera vez que abren la App
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log("SW: Cacheando archivos de GitHub...");
+      // Intentamos cachear cada archivo uno por uno para evitar que uno solo dañe todo el proceso
+      return Promise.allSettled(
+        ASSETS.map((url) => {
+          return cache.add(url).catch((err) => console.error("Fallo al cachear:", url, err));
+        })
+      );
     })
   );
-  self.skipWaiting();
+  self.skipWaiting(); // Obliga al SW nuevo a activarse de inmediato
 });
 
-// Activación: Borra versiones viejas de la app
-self.addEventListener("activate", e => {
-  e.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.map(k => {
-        if (k !== CACHE_NAME) return caches.delete(k);
-      })
-    ))
+// 2. ACTIVACIÓN: Limpia memorias viejas de versiones anteriores
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            console.log("SW: Borrando caché antiguo:", key);
+            return caches.delete(key);
+          }
+        })
+      );
+    })
   );
   return self.clients.claim();
 });
 
-// Peticiones: Si hay internet, busca lo nuevo. Si no, usa lo guardado.
-self.addEventListener("fetch", e => {
-  if (e.request.method !== "GET") return;
-  
-  e.respondWith(
-    fetch(e.request)
-      .then(res => {
-        const copy = res.clone();
-        caches.open(CACHE_NAME).then(c => c.put(e.request, copy));
-        return res;
+// 3. PETICIONES (FETCH): Estrategia "Network First"
+// Intenta traer lo más nuevo de internet. Si falla (estás en la calle sin señal), usa lo guardado.
+self.addEventListener("fetch", (event) => {
+  // Solo manejamos peticiones GET (para archivos, no para el envío del formulario)
+  if (event.request.method !== "GET") return;
+
+  event.respondWith(
+    fetch(event.request)
+      .then((networkResponse) => {
+        // Si hay internet, guardamos una copia de lo que bajamos y lo entregamos
+        return caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        });
       })
-      .catch(() => caches.match(e.request))
+      .catch(() => {
+        // Si NO hay internet, buscamos en la maleta (caché)
+        return caches.match(event.request).then((response) => {
+          if (response) return response;
+          
+          // Si es una página y no está en caché, podrías devolver una página offline aquí
+          console.log("SW: No hay internet ni copia en caché para:", event.request.url);
+        });
+      })
   );
 });
