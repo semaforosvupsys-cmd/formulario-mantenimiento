@@ -138,6 +138,7 @@
 <script>
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzGAYQI89mRwdp0QRD0FSD-61HIDifHllyaDXSzKm5ftt1tCj0-wOJMRdM-Sr0vfttK/exec"; 
 let coords = "Buscando GPS...";
+let estaSincronizando = false; // Bloqueo para evitar duplicados
 
 navigator.geolocation.getCurrentPosition(p => coords = `${p.coords.latitude},${p.coords.longitude}`);
 
@@ -165,10 +166,7 @@ function abrirForm(tipo) {
     document.getElementById("pantallaForm").classList.add("active");
     document.getElementById("tipoRegistro").value = tipo;
     document.getElementById("tituloSeccion").textContent = tipo.replace(/_/g, ' ');
-    
-    // Limpiar checkboxes previos
     document.querySelectorAll('.chk-prev').forEach(cb => cb.checked = false);
-
     document.getElementById("bloqueFallas").style.display = (tipo !== "PREVENTIVO") ? "block" : "none";
     document.getElementById("bloqueActividad").style.display = (tipo === "REPARACION") ? "block" : "none";
     document.getElementById("bloquePrioridad").style.display = (tipo === "INVENTARIO_FALLA") ? "block" : "none";
@@ -215,7 +213,6 @@ document.getElementById("mainForm").onsubmit = async e => {
     btn.disabled = true;
     msg.textContent = "⏳ Procesando...";
 
-    // RECOPILAR ACTIVIDADES PREVENTIVAS EN UN SOLO TEXTO
     const checks = document.querySelectorAll('.chk-prev:checked');
     let listaPreventivos = Array.from(checks).map(cb => cb.value).join(", ");
 
@@ -230,7 +227,6 @@ document.getElementById("mainForm").onsubmit = async e => {
         prioridad: document.getElementById("prioridad").value,
         observaciones: document.getElementById("observaciones").value,
         coords: coords,
-        // Se envía como campo unificado
         actividad_preventiva: listaPreventivos,
         foto1: await procesarFoto(document.getElementById("foto1").files[0]),
         foto2: await procesarFoto(document.getElementById("foto2").files[0])
@@ -254,8 +250,11 @@ document.getElementById("mainForm").onsubmit = async e => {
 
 function guardarLocal(d) {
     const p = JSON.parse(localStorage.getItem("vup_pendientes") || "[]");
-    p.push(d);
-    localStorage.setItem("vup_pendientes", JSON.stringify(p));
+    // Evitar guardar duplicados en local
+    if (!p.some(item => item.id === d.id)) {
+        p.push(d);
+        localStorage.setItem("vup_pendientes", JSON.stringify(p));
+    }
 }
 
 function finalizarEnvio(m, c) {
@@ -271,19 +270,29 @@ function finalizarEnvio(m, c) {
     }, 2500);
 }
 
+// Sincronización automática PROTEGIDA contra duplicados
 window.addEventListener("online", async () => {
+    if (estaSincronizando) return;
+    
     let p = JSON.parse(localStorage.getItem("vup_pendientes") || "[]");
     if (!p.length) return;
+
+    estaSincronizando = true;
+    
     for (let i = 0; i < p.length; i++) {
         try {
             const r = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify(p[i]) });
             if (await r.text() === "OK") {
+                // Eliminar inmediatamente después de confirmar envío OK
                 p.splice(i, 1);
+                localStorage.setItem("vup_pendientes", JSON.stringify(p));
                 i--;
             }
-        } catch (e) {}
+        } catch (e) {
+            console.error("Error en sincronización, se mantiene en local.");
+        }
     }
-    localStorage.setItem("vup_pendientes", JSON.stringify(p));
+    estaSincronizando = false;
     actualizarAlerta();
 });
 
