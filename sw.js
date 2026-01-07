@@ -1,4 +1,4 @@
-const CACHE_NAME = "mnt-v9"; // Subimos a v9 para forzar la actualización
+const CACHE_NAME = "mnt-v10"; // Subimos a v9 para forzar la actualización
 const ASSETS = [
   "./",
   "./index.html",
