@@ -97,7 +97,11 @@
                 <label>Tipo de Falla</label>
                 <select id="falla">
                     <option value="">Seleccione Falla</option>
-                    <option value="Lampara">Lámpara</option>
+                    <option value="Lampara Vehicular">Lámpara Vehicular</option>
+                    <option value="Lampara Peatonal">Lámpara Peatonal</option>
+                    <option value="Semaforo Vehicular">Semáforo Vehicular</option>
+                    <option value="Semaforo Peatonal">Semáforo Peatonal</option>
+                    <option value="Semaforo de piso">Semáforo de piso</option>
                     <option value="Cableado">Cableado</option>
                     <option value="Controlador">Controlador</option>
                     <option value="Estructural">Estructural</option>
@@ -159,7 +163,6 @@ let estaSincronizando = false;
 
 navigator.geolocation.getCurrentPosition(p => coords = `${p.coords.latitude},${p.coords.longitude}`);
 
-// FUNCIÓN DE BÚSQUEDA DE HISTORIAL
 async function buscarHistorial() {
     const term = document.getElementById("txtBuscar").value;
     const resDiv = document.getElementById("resultadosBusqueda");
@@ -186,13 +189,17 @@ async function buscarHistorial() {
     }
 }
 
-// RESTO DE LÓGICA DE FORMULARIOS (MANTENIDA IGUAL)
+// DICCIONARIO ACTUALIZADO SEGÚN SOLICITUD
 const diccionarioActividades = {
-    "Lampara": ["Vehicular", "Peatonal"],
-    "Cableado": ["Vehicular", "Peatonal", "Acometida eléctrica"],
-    "Controlador": ["Tarjetas", "Reinicio", "Breaker", "Comunicación", "UPS", "Fusible"],
-    "Estructural": ["Postes T1", "Postes T2", "Semáforos S1", "Semáforos S2", "Bases", "Anclaje", "Tornillos"],
-    "Radar de Velocidad": ["Baterías", "Panel Solar", "Panel Electrónico"]
+    "Lampara Vehicular": ["Cambio de módulo LED", "Limpieza de lente", "Ajuste de visera", "Revisión de voltaje"],
+    "Lampara Peatonal": ["Cambio de módulo LED", "Limpieza de lente", "Reparación de pulsador", "Ajuste"],
+    "Semaforo Vehicular": ["Reparación estructural", "Cambio de cara", "Ajuste de pernos", "Pintura"],
+    "Semaforo Peatonal": ["Reparación estructural", "Cambio de soporte", "Ajuste", "Limpieza"],
+    "Semaforo de piso": ["Mantenimiento módulo LED", "Cambio de policarbonato", "Sello con resina", "Revisión cableado base"],
+    "Cableado": ["Vehicular", "Peatonal", "Acometida eléctrica", "Cambio de manguera"],
+    "Controlador": ["Cambio de tarjetas", "Reinicio de sistema", "Breaker", "Comunicación GPS/4G", "UPS", "Fusible"],
+    "Estructural": ["Postes T1", "Postes T2", "Semáforos S1", "Semáforos S2", "Bases de concreto", "Anclaje", "Tornillería"],
+    "Radar de Velocidad": ["Baterías", "Panel Solar", "Panel Electrónico", "Calibración"]
 };
 
 document.getElementById("falla").onchange = (e) => {
@@ -212,8 +219,12 @@ function abrirForm(tipo) {
     document.getElementById("tipoRegistro").value = tipo;
     document.getElementById("tituloSeccion").textContent = tipo.replace(/_/g, ' ');
     document.querySelectorAll('.chk-prev').forEach(cb => cb.checked = false);
+    
+    // El bloque de fallas se muestra para REPARACION e INVENTARIO
     document.getElementById("bloqueFallas").style.display = (tipo !== "PREVENTIVO") ? "block" : "none";
+    // Actividad realizada (segundo select) solo se requiere en REPARACION
     document.getElementById("bloqueActividad").style.display = (tipo === "REPARACION") ? "block" : "none";
+    
     document.getElementById("bloquePrioridad").style.display = (tipo === "INVENTARIO_FALLA") ? "block" : "none";
     document.getElementById("bloquePreventivo").style.display = (tipo === "PREVENTIVO") ? "block" : "none";
     document.getElementById("foto2Contenedor").style.display = (tipo === "INVENTARIO_FALLA") ? "none" : "block";
