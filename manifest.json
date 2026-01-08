@@ -1,7 +1,7 @@
 {
   "name": "Semaforos VUP",
   "short_name": "VUP App",
-  "start_url": "https://script.google.com/macros/s/AKfycbyQu4zCWkSamL2-oHLPqPmze43-a7p7snIGTl8U_xUbn3mFz2-RpQUp1M2t3iZDjOKP/exec",
+  "start_url": "https://script.google.com/macros/s/AKfycbwkqAfE3Jsyn47sVzUT1EthvMsHWxuUCorQA-pSisE/dev",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#059669",
