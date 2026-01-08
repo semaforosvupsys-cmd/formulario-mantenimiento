@@ -2,190 +2,216 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mantenimiento VUP Pro</title>
+    <title>Gestión de Tránsito VUP</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    
-    <link rel="manifest" href="https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/manifest.json" crossorigin="anonymous">
-    
+    <link rel="manifest" href="https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/manifest.json?v=2" crossorigin="anonymous">
     <meta name="theme-color" content="#0f172a">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: #0f172a; padding: 15px; margin: 0; color: white; }
-        .container { max-width: 450px; margin: auto; }
+        body { background: #0f172a; color: #fff; padding: 15px; margin: 0; }
+        .container { max-width: 500px; margin: auto; }
         
-        /* Menú de Botones */
-        .menu-grid { display: grid; gap: 12px; margin-top: 20px; }
+        /* Menú Principal */
+        .menu-grid { display: grid; gap: 15px; margin-top: 20px; }
         .menu-btn { 
-            padding: 20px; border-radius: 15px; border: none; font-weight: bold; 
-            font-size: 1rem; cursor: pointer; color: white; text-align: left;
+            padding: 25px; border-radius: 15px; border: none; font-weight: bold; 
+            font-size: 1.1rem; cursor: pointer; color: white; text-align: left;
             transition: 0.3s; display: flex; align-items: center; justify-content: space-between;
         }
-        .btn-reparacion { background: #059669; border-left: 8px solid #047857; }
-        .btn-inventario { background: #3b82f6; border-left: 8px solid #1d4ed8; }
-        .btn-preventivo { background: #8b5cf6; border-left: 8px solid #6d28d9; }
+        .menu-btn:active { transform: scale(0.98); }
+        .btn-reparacion { background: #059669; border-left: 10px solid #047857; }
+        .btn-pendiente { background: #3b82f6; border-left: 10px solid #1d4ed8; }
+        .btn-preventivo { background: #8b5cf6; border-left: 10px solid #6d28d9; }
 
-        /* Tarjetas de Formulario */
-        .card { background: white; color: #1e293b; padding: 25px; border-radius: 20px; display: none; margin-top: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .active { display: block; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        /* Buscadores */
+        .search-container { margin-top: 25px; background: #1e293b; padding: 15px; border-radius: 15px; border: 1px solid #334155; }
+        .tab-box { display: flex; gap: 5px; margin-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 8px; font-size: 0.7rem; border: none; border-radius: 5px; cursor: pointer; background: #334155; color: #94a3b8; }
+        .tab-btn.active-tab { background: #3b82f6; color: white; }
+        .search-box { display: flex; gap: 8px; }
+        .search-box input { flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 14px; }
+        .btn-search { background: #64748b; border: none; color: white; padding: 10px 15px; border-radius: 8px; cursor: pointer; }
+        .result-card { background: #334155; padding: 12px; border-radius: 10px; margin-top: 8px; font-size: 0.85rem; border-left: 4px solid #3b82f6; }
 
-        label { display: block; margin-top: 15px; font-weight: 700; font-size: 0.85rem; color: #475569; }
+        /* Formulario */
+        .card { background: white; color: #1e293b; padding: 20px; border-radius: 20px; display: none; margin-top: 10px; }
+        .active-form { display: block; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        label { display: block; margin-top: 12px; font-weight: bold; font-size: 0.9rem; color: #475569; }
         input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 16px; background: #f8fafc; }
-        
-        /* Checkboxes Preventivos */
-        .check-item { display: flex; align-items: center; gap: 10px; background: #f1f5f9; padding: 10px; border-radius: 8px; margin-top: 5px; color: #334155; font-size: 0.9rem; }
-        .check-item input { width: 18px; height: 18px; margin: 0; }
-
-        .btn-send { width: 100%; padding: 15px; margin-top: 20px; border-radius: 10px; border: none; background: #0f172a; color: white; font-weight: bold; cursor: pointer; }
-        .btn-back { background: #f1f5f9; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px; color: #475569; }
-        .img-prev { width: 100%; border-radius: 10px; margin-top: 10px; display: none; border: 1px solid #ddd; }
-        .gps-info { font-size: 0.75rem; color: #94a3b8; margin-top: 10px; text-align: center; }
+        .btn-send { background: #0f172a; color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; margin-top: 25px; font-weight: bold; cursor: pointer; }
+        .btn-back { background: #f1f5f9; color: #475569; border: none; padding: 10px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; font-weight: bold; }
+        .check-item { display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 12px; border-radius: 10px; margin-top: 6px; border: 1px solid #e2e8f0; }
+        .img-preview { width: 100%; border-radius: 10px; margin-top: 10px; display: none; border: 2px solid #e2e8f0; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="seccionMenu">
-        <h2 style="text-align: center; margin-top: 20px;">🚦 Sistema VUP</h2>
+    <div id="menuPrincipal">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/icons/icon-192.png" style="width: 60px; border-radius: 12px;">
+            <h2 style="margin: 10px 0 0 0;">Gestión VUP (Actualizado)</h2>
+        </div>
+        
         <div class="menu-grid">
             <button class="menu-btn btn-reparacion" onclick="abrirForm('REPARACION')">🛠️ REGISTRAR ARREGLO <span>→</span></button>
-            <button class="menu-btn btn-inventario" onclick="abrirForm('INVENTARIO_FALLA')">📝 INVENTARIO FALLA <span>→</span></button>
+            <button class="menu-btn btn-pendiente" onclick="abrirForm('INVENTARIO_FALLA')">📝 INVENTARIO DE FALLA <span>→</span></button>
             <button class="menu-btn btn-preventivo" onclick="abrirForm('PREVENTIVO')">✅ MANT. PREVENTIVO <span>→</span></button>
         </div>
-        <div id="gpsStatus" class="gps-info">📍 Buscando ubicación...</div>
+
+        <div class="search-container">
+            <div class="tab-box">
+                <button id="tabHist" class="tab-btn active-tab" onclick="cambiarTab('historial')">HISTORIAL</button>
+                <button id="tabCont" class="tab-btn" onclick="cambiarTab('controladores')">CONTROLADORES</button>
+            </div>
+            <div class="search-box">
+                <input type="text" id="txtBuscar" placeholder="Buscar...">
+                <button class="btn-search" onclick="ejecutarBusqueda()">BUSCAR</button>
+            </div>
+            <div id="resultadosBusqueda"></div>
+        </div>
     </div>
 
-    <div id="seccionForm" class="card">
+    <div id="pantallaForm" class="card">
         <button class="btn-back" onclick="irAlMenu()">← Volver</button>
-        <h3 id="tituloForm" style="margin:0; color:#0f172a"></h3>
-        
+        <h2 id="tituloSeccion" style="margin:0; color: #0f172a;"></h2>
         <form id="mainForm">
             <input type="hidden" id="tipoRegistro">
-            
-            <label>Fecha</label>
-            <input type="date" id="fecha" required>
-
+            <label>Fecha</label><input type="date" id="fecha" required>
             <label>Técnico</label>
             <select id="tecnico" required>
-                <option value="">Seleccione</option>
-                <option>Luis Gutierrez</option>
-                <option>Guanerge Salcedo</option>
-                <option>Juan Bolaños</option>
-                <option>Jose Colmenares</option>
-                <option>William Orcasita</option>
+                <option value="">Seleccione Técnico</option>
+                <option>Luis Gutierrez</option><option>Guanerge Salcedo</option><option>Juan Bolaños</option><option>Jose Colmenares</option><option>William Orcasita</option>
             </select>
-
-            <label>Ubicación / Código</label>
-            <input type="text" id="direccion" placeholder="Ej: VUP-001" required>
+            <label>Ubicación / Código VUP</label><input type="text" id="direccion" required>
 
             <div id="bloqueFallas">
                 <label>Tipo de Falla</label>
                 <select id="falla">
-                    <option value="">Seleccione</option>
+                    <option value="">Seleccione Falla</option>
                     <option value="Lampara Vehicular">Lámpara Vehicular</option>
                     <option value="Lampara Peatonal">Lámpara Peatonal</option>
-                    <option value="Controlador">Controlador</option>
+                    <option value="Semaforo Vehicular">Semáforo Vehicular</option>
+                    <option value="Semaforo Peatonal">Semáforo Peatonal</option>
                     <option value="Semaforo de piso">Semáforo de piso</option>
                     <option value="Cableado">Cableado</option>
+                    <option value="Controlador">Controlador</option>
                     <option value="Estructural">Estructural</option>
+                    <option value="Radar de Velocidad">Radar de Velocidad</option>
                 </select>
-
                 <div id="bloqueActividad">
                     <label>Actividad Realizada</label>
-                    <select id="actividad"><option value="">Seleccione</option></select>
+                    <select id="actividad"><option value="">Seleccione Actividad</option></select>
                 </div>
             </div>
 
-            <div id="bloquePreventivo" style="display:none">
-                <label>Rutinas Realizadas</label>
-                <div class="check-item"><input type="checkbox" class="chk-prev" value="Limpieza de lamparas"> Limpieza de lámparas</div>
-                <div class="check-item"><input type="checkbox" class="chk-prev" value="Limpieza de controlador"> Limpieza de controlador</div>
-                <div class="check-item"><input type="checkbox" class="chk-prev" value="Ajustes de tornillería"> Ajustes de tornillería</div>
-                <div class="check-item"><input type="checkbox" class="chk-prev" value="Pintura/Soldadura"> Pintura / Soldadura</div>
+            <div id="bloquePrioridad" style="display:none">
+                <label>Prioridad</label>
+                <select id="prioridad"><option>Baja</option><option>Media</option><option>ALTA</option></select>
             </div>
 
-            <label>Observaciones</label>
-            <textarea id="observaciones" rows="2"></textarea>
+            <div id="bloquePreventivo" style="display:none">
+                <label>Rutinas</label>
+                <div class="check-item"><input type="checkbox" class="chk-prev" value="Limpieza"> Limpieza Gral</div>
+                <div class="check-item"><input type="checkbox" class="chk-prev" value="Voltajes"> Revisión Voltajes</div>
+            </div>
 
-            <label>Foto ANTES</label>
-            <input type="file" id="foto1" accept="image/*" capture="camera" onchange="prev(this, 'p1')">
-            <img id="p1" class="img-prev">
+            <label>Observaciones</label><textarea id="observaciones" rows="2"></textarea>
+
+            <label>Foto Antes (Cámara o Galería)</label>
+            <input type="file" id="foto1" accept="image/*" onchange="preview(this, 'v1')">
+            <img id="v1" class="img-preview">
 
             <div id="foto2Contenedor">
-                <label>Foto DESPUÉS</label>
-                <input type="file" id="foto2" accept="image/*" capture="camera" onchange="prev(this, 'p2')">
-                <img id="p2" class="img-prev">
+                <label>Foto Después (Cámara o Galería)</label>
+                <input type="file" id="foto2" accept="image/*" onchange="preview(this, 'v2')">
+                <img id="v2" class="img-preview">
             </div>
 
             <button type="submit" class="btn-send" id="btnGuardar">GUARDAR REGISTRO</button>
-            <div id="status" style="text-align:center; margin-top:10px; font-weight:bold; color: #0f172a;"></div>
+            <div id="msgStatus" style="text-align:center; margin-top:15px; font-weight:bold"></div>
         </form>
     </div>
 </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyQu4zCWkSamL2-oHLPqPmze43-a7p7snIGTl8U_xUbn3mFz2-RpQUp1M2t3iZDjOKP/exec";
-let coords = "No obtenida";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw7YGL0nPg8PxoVPgKxWM4fzs2C538F3zJBfVIqsNXKfFfW9wUTCgk4yXvmOn3zzN0h/exec"; 
+let coords = "Buscando GPS...";
+let modoBusqueda = "historial";
 
-/* === GPS === */
-navigator.geolocation.getCurrentPosition(
-    p => { coords = `${p.coords.latitude},${p.coords.longitude}`; document.getElementById("gpsStatus").textContent = "📍 Ubicación fijada"; },
-    () => { document.getElementById("gpsStatus").textContent = "📍 GPS no disponible"; }
-);
+navigator.geolocation.getCurrentPosition(p => coords = `${p.coords.latitude},${p.coords.longitude}`);
 
-/* === PWA REGISTRO === */
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/sw.js', { scope: '/' });
-  });
+function cambiarTab(modo) {
+    modoBusqueda = modo;
+    document.getElementById("tabHist").classList.toggle("active-tab", modo === 'historial');
+    document.getElementById("tabCont").classList.toggle("active-tab", modo === 'controladores');
 }
 
-function irAlMenu() {
-    document.getElementById('seccionForm').classList.remove('active');
-    document.getElementById('seccionMenu').style.display = 'block';
+async function ejecutarBusqueda() {
+    const term = document.getElementById("txtBuscar").value;
+    const resDiv = document.getElementById("resultadosBusqueda");
+    if(!term) return;
+    resDiv.innerHTML = "⌛...";
+    const q = modoBusqueda === 'historial' ? `buscar=${term}` : `getControladores=true&filtro=${term}`;
+    try {
+        const r = await fetch(`${WEB_APP_URL}?${q}`);
+        const data = await r.json();
+        resDiv.innerHTML = "";
+        data.forEach(item => {
+            resDiv.innerHTML += `<div class="result-card">${item.fecha || item.codigo} - ${item.tipo || item.direccion}</div>`;
+        });
+    } catch (e) { resDiv.innerHTML = "Error"; }
 }
+
+const diccionarioActividades = {
+    "Lampara Vehicular": ["Módulo LED", "Limpieza", "Visera", "Voltaje"],
+    "Lampara Peatonal": ["Módulo LED", "Limpieza", "Pulsador"],
+    "Semaforo Vehicular": ["Estructural", "Cara", "Pernos"],
+    "Semaforo Peatonal": ["Estructural", "Soporte", "Limpieza"],
+    "Semaforo de piso": ["Mantenimiento LED", "Policarbonato", "Resina"],
+    "Cableado": ["Vehicular", "Peatonal", "Acometida"],
+    "Controlador": ["Tarjetas", "Reinicio", "Breaker", "GPS/4G", "UPS", "Fusible"],
+    "Estructural": ["Poste T1/T2", "Anclaje", "Tornillería"],
+    "Radar de Velocidad": ["Baterías", "Panel Solar", "Calibración"]
+};
+
+document.getElementById("falla").onchange = (e) => {
+    const actSel = document.getElementById("actividad");
+    actSel.innerHTML = "<option value=''>Seleccione Actividad</option>";
+    if(diccionarioActividades[e.target.value]) {
+        diccionarioActividades[e.target.value].forEach(a => {
+            let o = document.createElement("option"); o.value = o.textContent = a; actSel.appendChild(o);
+        });
+    }
+};
 
 function abrirForm(tipo) {
-    document.getElementById('seccionMenu').style.display = 'none';
-    document.getElementById('seccionForm').classList.add('active');
-    document.getElementById('tipoRegistro').value = tipo;
-    document.getElementById('tituloForm').textContent = tipo.replace(/_/g, ' ');
-
+    document.getElementById("menuPrincipal").style.display = "none";
+    document.getElementById("pantallaForm").classList.add("active-form");
+    document.getElementById("tipoRegistro").value = tipo;
+    document.getElementById("tituloSeccion").textContent = tipo.replace(/_/g, ' ');
     document.getElementById("bloqueFallas").style.display = (tipo !== "PREVENTIVO") ? "block" : "none";
+    document.getElementById("bloqueActividad").style.display = (tipo === "REPARACION") ? "block" : "none";
+    document.getElementById("bloquePrioridad").style.display = (tipo === "INVENTARIO_FALLA") ? "block" : "none";
     document.getElementById("bloquePreventivo").style.display = (tipo === "PREVENTIVO") ? "block" : "none";
     document.getElementById("foto2Contenedor").style.display = (tipo === "INVENTARIO_FALLA") ? "none" : "block";
 }
 
-/* === LÓGICA DE FALLAS === */
-const actividades = {
-    "Lampara Vehicular": ["Cambio LED", "Limpieza", "Revisión"],
-    "Controlador": ["Tarjetas", "Reinicio", "Breaker", "Fusible"],
-    "Semaforo de piso": ["Módulo LED", "Resina"],
-    "Cableado": ["Vehicular", "Peatonal", "Acometida"],
-    "Estructural": ["Postes", "Pintura", "Soldadura"]
-};
+function irAlMenu() {
+    document.getElementById("pantallaForm").classList.remove("active-form");
+    document.getElementById("menuPrincipal").style.display = "block";
+}
 
-document.getElementById('falla').onchange = (e) => {
-    const act = document.getElementById('actividad');
-    act.innerHTML = "<option value=''>Seleccione</option>";
-    (actividades[e.target.value] || []).forEach(a => {
-        let o = document.createElement("option"); o.value = o.textContent = a; act.appendChild(o);
-    });
-};
-
-function prev(input, id) {
+function preview(input, id) {
     if (input.files && input.files[0]) {
-        const r = new FileReader();
-        r.onload = e => { const i = document.getElementById(id); i.src = e.target.result; i.style.display = "block"; }
-        r.readAsDataURL(input.files[0]);
+        const reader = new FileReader();
+        reader.onload = e => { const img = document.getElementById(id); img.src = e.target.result; img.style.display = 'block'; }
+        reader.readAsDataURL(input.files[0]);
     }
 }
 
-/* === COMPRESIÓN DE IMAGEN (TU CÓDIGO) === */
 async function procesarFoto(file) {
     if(!file) return "";
     return new Promise(res => {
@@ -196,52 +222,61 @@ async function procesarFoto(file) {
             img.src = e.target.result;
             img.onload = () => {
                 const canvas = document.createElement("canvas");
-                const MAX = 1000;
+                const MAX = 800;
                 let w = img.width, h = img.height;
                 if (w > h && w > MAX) { h *= MAX/w; w = MAX; }
                 else if (h > MAX) { w *= MAX/h; h = MAX; }
                 canvas.width = w; canvas.height = h;
                 canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-                res(canvas.toDataURL("image/jpeg", 0.7).split(",")[1]);
+                res(canvas.toDataURL("image/jpeg", 0.6).split(",")[1]);
             };
         };
     });
 }
 
-/* === ENVÍO DE DATOS === */
-document.getElementById('mainForm').onsubmit = async (e) => {
+document.getElementById("mainForm").onsubmit = async e => {
     e.preventDefault();
-    const btn = document.getElementById('btnGuardar');
+    const btn = document.getElementById("btnGuardar");
     btn.disabled = true;
-    document.getElementById('status').textContent = "⌛ Guardando...";
-
-    const checks = document.querySelectorAll('.chk-prev:checked');
-    let listaPreventivos = Array.from(checks).map(cb => cb.value).join(", ");
-
+    document.getElementById("msgStatus").textContent = "⏳ Enviando...";
     const datos = {
         id: "VUP-" + Date.now(),
-        tipo: document.getElementById('tipoRegistro').value,
-        fecha: document.getElementById('fecha').value,
-        tecnico: document.getElementById('tecnico').value,
-        direccion: document.getElementById('direccion').value,
-        falla: document.getElementById('falla').value,
-        actividad: document.getElementById('actividad').value,
-        actividad_preventiva: listaPreventivos,
-        observaciones: document.getElementById('observaciones').value,
+        tipo: document.getElementById("tipoRegistro").value,
+        fecha: document.getElementById("fecha").value,
+        tecnico: document.getElementById("tecnico").value,
+        direccion: document.getElementById("direccion").value,
+        falla: document.getElementById("falla").value,
+        actividad: document.getElementById("actividad").value,
+        prioridad: document.getElementById("prioridad").value,
+        observaciones: document.getElementById("observaciones").value,
         coords: coords,
-        foto1: await procesarFoto(document.getElementById('foto1').files[0]),
-        foto2: await procesarFoto(document.getElementById('foto2').files[0])
+        foto1: await procesarFoto(document.getElementById("foto1").files[0]),
+        foto2: await procesarFoto(document.getElementById("foto2").files[0])
     };
-
     try {
         await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(datos) });
-        document.getElementById('status').textContent = "✅ ¡Enviado con éxito!";
-        setTimeout(() => { location.reload(); }, 2000);
-    } catch (err) {
-        document.getElementById('status').textContent = "❌ Error de conexión";
+        document.getElementById("msgStatus").innerHTML = "✅ ¡EXITO!";
+        setTimeout(() => location.reload(), 2000);
+    } catch(err) {
+        document.getElementById("msgStatus").innerHTML = "❌ Error";
         btn.disabled = false;
     }
 };
+
+// Registro de Service Worker forzado
+if('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('https://semaforosvupsys-cmd.github.io/formulario-mantenimiento/sw.js?v=2')
+    .then(reg => {
+        reg.onupdatefound = () => {
+            const installingWorker = reg.installing;
+            installingWorker.onstatechange = () => {
+                if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    location.reload(); // Recarga automática al detectar nueva versión
+                }
+            };
+        };
+    });
+}
 </script>
 </body>
 </html>
