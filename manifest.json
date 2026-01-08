@@ -1,13 +1,11 @@
 {
   "name": "Mantenimiento VUP",
   "short_name": "VUP App",
-  "description": "Sistema Gestión Semafórica Valledupar",
-  "id": "/vup-app",
-  "start_url": "https://script.google.com/macros/s/AKfycbyQu4zCWkSamL2-oHLPqPmze43-a7p7snIGTl8U_xUbn3mFz2-RpQUp1M2t3iZDjOKP/exec",
+  "start_url": "TU_URL_DE_APPS_SCRIPT_AQUI",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "theme_color": "#059669",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/icons/icon-192.png",
