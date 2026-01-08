@@ -1,4 +1,4 @@
-const CACHE_NAME = "vup-v15";
+const CACHE_NAME = "vup-v16";
 const ASSETS = [
   "https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/manifest.json",
   "https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/icons/icon-192.png",
