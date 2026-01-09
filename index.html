@@ -44,6 +44,7 @@
         .btn-back { background: #f1f5f9; color: #475569; border: none; padding: 10px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; font-weight: bold; }
         .check-item { display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 12px; border-radius: 10px; margin-top: 6px; border: 1px solid #e2e8f0; }
         .img-preview { width: 100%; border-radius: 10px; margin-top: 10px; display: none; border: 2px solid #e2e8f0; }
+        .foto-hint { color: #64748b; font-size: 0.75rem; display: block; margin-top: 4px; }
     </style>
 </head>
 <body>
@@ -79,13 +80,18 @@
         <h2 id="tituloSeccion" style="margin:0; color: #0f172a;"></h2>
         <form id="mainForm">
             <input type="hidden" id="tipoRegistro">
-            <label>Fecha</label><input type="date" id="fecha" required>
+            
+            <label>Fecha</label>
+            <input type="date" id="fecha" required>
+            
             <label>Técnico</label>
             <select id="tecnico" required>
                 <option value="">Seleccione Técnico</option>
                 <option>Luis Gutierrez</option><option>Guanerge Salcedo</option><option>Juan Bolaños</option><option>Jose Colmenares</option><option>William Orcasita</option>
             </select>
-            <label>Ubicación / Código VUP</label><input type="text" id="direccion" required>
+            
+            <label>Ubicación / Código VUP</label>
+            <input type="text" id="direccion" required>
 
             <div id="bloqueFallas">
                 <label>Tipo de Falla</label>
@@ -118,17 +124,20 @@
                 <div class="check-item"><input type="checkbox" class="chk-prev" value="Voltajes"> Revisión Voltajes</div>
             </div>
 
-            <label>Observaciones</label><textarea id="observaciones" rows="2"></textarea>
+            <label>Observaciones</label>
+            <textarea id="observaciones" rows="2"></textarea>
 
-          <label>Foto ANTES / Evidencia</label>
-           <input type="file" id="foto1" accept="image/*">
+            <label>Foto ANTES / Evidencia</label>
+            <input type="file" id="foto1" accept="image/*" onchange="preview(this, 'v1')">
+            <span class="foto-hint">📷 Cámara o Galería</span>
             <img id="v1" class="img-preview">
-    
-           <div id="foto2Contenedor">
-            <label>Foto DESPUÉS / Arreglo</label>
-           <input type="file" id="foto2" accept="image/*">
-           <img id="v2" class="img-preview">
-           </div>
+
+            <div id="foto2Contenedor">
+                <label>Foto DESPUÉS / Arreglo</label>
+                <input type="file" id="foto2" accept="image/*" onchange="preview(this, 'v2')">
+                <span class="foto-hint">📷 Cámara o Galería</span>
+                <img id="v2" class="img-preview">
+            </div>
 
             <button type="submit" class="btn-send" id="btnGuardar">GUARDAR REGISTRO</button>
             <div id="msgStatus" style="text-align:center; margin-top:15px; font-weight:bold"></div>
@@ -263,7 +272,6 @@ document.getElementById("mainForm").onsubmit = async e => {
     }
 };
 
-// Registro de Service Worker forzado
 if('serviceWorker' in navigator) {
     navigator.serviceWorker.register('https://semaforosvupsys-cmd.github.io/formulario-mantenimiento/sw.js?v=2')
     .then(reg => {
@@ -271,7 +279,7 @@ if('serviceWorker' in navigator) {
             const installingWorker = reg.installing;
             installingWorker.onstatechange = () => {
                 if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    location.reload(); // Recarga automática al detectar nueva versión
+                    location.reload();
                 }
             };
         };
