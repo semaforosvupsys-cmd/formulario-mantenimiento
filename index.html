@@ -42,7 +42,16 @@
         input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 16px; background: #f8fafc; }
         .btn-send { background: #0f172a; color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; margin-top: 25px; font-weight: bold; cursor: pointer; }
         .btn-back { background: #f1f5f9; color: #475569; border: none; padding: 10px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; font-weight: bold; }
-        .check-item { display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 12px; border-radius: 10px; margin-top: 6px; border: 1px solid #e2e8f0; }
+        
+        /* Diseño de Checks Preventivos */
+        .rutinas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .check-item { 
+            display: flex; align-items: center; gap: 8px; background: #f1f5f9; 
+            padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; 
+            font-size: 0.75rem; color: #1e293b; font-weight: 500;
+        }
+        .check-item input[type="checkbox"] { width: 18px; height: 18px; margin: 0; cursor: pointer; }
+        
         .img-preview { width: 100%; border-radius: 10px; margin-top: 10px; display: none; border: 2px solid #e2e8f0; }
     </style>
 </head>
@@ -118,9 +127,17 @@
             </div>
 
             <div id="bloquePreventivo" style="display:none">
-                <label>Rutinas</label>
-                <div class="check-item"><input type="checkbox" class="chk-prev" value="Limpieza"> Limpieza Gral</div>
-                <div class="check-item"><input type="checkbox" class="chk-prev" value="Voltajes"> Revisión Voltajes</div>
+                <label>Rutinas Realizadas</label>
+                <div class="rutinas-grid">
+                    <div class="check-item"><input type="checkbox" class="chk-prev" value="Limpieza Controlador"> Limpieza Controlador</div>
+                    <div class="check-item"><input type="checkbox" class="chk-prev" value="Ajuste Tornillos"> Ajuste Tornillos</div>
+                    <div class="check-item"><input type="checkbox" class="chk-prev" value="Ajuste Tarjetas"> Ajus. Tarjetas Elec.</div>
+                    <div class="check-item"><input type="checkbox" class="chk-prev" value="Limpieza Postes"> Limpieza Postes</div>
+                    <div class="check-item"><input type="checkbox" class="chk-prev" value="Limpieza Semaforos"> Limpieza Semáforos</div>
+                    <div class="check-item"><input type="checkbox" class="chk-prev" value="Ajuste Polo Tierra"> Ajuste Polo Tierra</div>
+                    <div class="check-item"><input type="checkbox" class="chk-prev" value="Pintura"> Pintura</div>
+                    <div class="check-item"><input type="checkbox" class="chk-prev" value="Programacion"> Programación</div>
+                </div>
             </div>
 
             <label>Observaciones</label>
@@ -203,6 +220,10 @@ function abrirForm(tipo) {
     document.getElementById("bloquePrioridad").style.display = (tipo === "INVENTARIO_FALLA") ? "block" : "none";
     document.getElementById("bloquePreventivo").style.display = (tipo === "PREVENTIVO") ? "block" : "none";
     document.getElementById("foto2Contenedor").style.display = (tipo === "INVENTARIO_FALLA") ? "none" : "block";
+    
+    // Cambiar color botón guardar si es preventivo
+    const btn = document.getElementById("btnGuardar");
+    btn.style.background = (tipo === "PREVENTIVO") ? "#8b5cf6" : "#0f172a";
 }
 
 function irAlMenu() {
@@ -243,16 +264,24 @@ async function procesarFoto(file) {
 document.getElementById("mainForm").onsubmit = async e => {
     e.preventDefault();
     const btn = document.getElementById("btnGuardar");
+    const tipo = document.getElementById("tipoRegistro").value;
     btn.disabled = true;
     document.getElementById("msgStatus").textContent = "⏳ Enviando...";
+
+    // Capturar múltiples rutinas de preventivo
+    let actividadFinal = document.getElementById("actividad").value;
+    if(tipo === "PREVENTIVO") {
+        actividadFinal = Array.from(document.querySelectorAll('.chk-prev:checked')).map(cb => cb.value).join(', ');
+    }
+
     const datos = {
         id: "VUP-" + Date.now(),
-        tipo: document.getElementById("tipoRegistro").value,
+        tipo: tipo,
         fecha: document.getElementById("fecha").value,
         tecnico: document.getElementById("tecnico").value,
         direccion: document.getElementById("direccion").value,
         falla: document.getElementById("falla").value,
-        actividad: document.getElementById("actividad").value,
+        actividad: actividadFinal,
         prioridad: document.getElementById("prioridad").value,
         observaciones: document.getElementById("observaciones").value,
         coords: coords,
@@ -261,10 +290,10 @@ document.getElementById("mainForm").onsubmit = async e => {
     };
     try {
         await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(datos) });
-        document.getElementById("msgStatus").innerHTML = "✅ ¡EXITO!";
+        document.getElementById("msgStatus").innerHTML = "✅ ¡REGISTRO GUARDADO!";
         setTimeout(() => location.reload(), 2000);
     } catch(err) {
-        document.getElementById("msgStatus").innerHTML = "❌ Error";
+        document.getElementById("msgStatus").innerHTML = "❌ Error al conectar";
         btn.disabled = false;
     }
 };
