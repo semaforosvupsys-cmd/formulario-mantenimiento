@@ -1,29 +1,28 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>SGS Valledupar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel="manifest" href="https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/manifest.json?v=5" crossorigin="anonymous">
+    <link rel="manifest" href="https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/manifest.json?v=3" crossorigin="anonymous">
     <meta name="theme-color" content="#0f172a">
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: #0f172a; color: #fff; padding: 15px; margin: 0; }
         .container { max-width: 500px; margin: auto; }
         
-        /* Menú Principal Reordenado */
-        .menu-grid { display: grid; gap: 12px; margin-top: 20px; }
+        /* Menú Principal */
+        .menu-grid { display: grid; gap: 15px; margin-top: 20px; }
         .menu-btn { 
-            padding: 20px; border-radius: 15px; border: none; font-weight: bold; 
-            font-size: 1rem; cursor: pointer; color: white; text-align: left;
+            padding: 25px; border-radius: 15px; border: none; font-weight: bold; 
+            font-size: 1.1rem; cursor: pointer; color: white; text-align: left;
             transition: 0.3s; display: flex; align-items: center; justify-content: space-between;
         }
         .menu-btn:active { transform: scale(0.98); }
-        .btn-pendiente { background: #3b82f6; border-left: 10px solid #1d4ed8; } /* 1. Inventario */
-        .btn-reparacion { background: #059669; border-left: 10px solid #047857; } /* 2. Arreglo */
-        .btn-lab { background: #d97706; border-left: 10px solid #92400e; }        /* 3. Laboratorio */
-        .btn-preventivo { background: #8b5cf6; border-left: 10px solid #6d28d9; } /* 4. Preventivo */
-        .btn-renovacion { background: #64748b; border-left: 10px solid #334155; } /* 5. Renovación */
+        .btn-reparacion { background: #059669; border-left: 10px solid #047857; }
+        .btn-pendiente { background: #3b82f6; border-left: 10px solid #1d4ed8; }
+        .btn-preventivo { background: #8b5cf6; border-left: 10px solid #6d28d9; }
+        .btn-laboratorio { background: #f59e0b; border-left: 10px solid #d97706; } /* Nuevo Estilo */
 
         /* Buscadores */
         .search-container { margin-top: 25px; background: #1e293b; padding: 15px; border-radius: 15px; border: 1px solid #334155; }
@@ -42,7 +41,10 @@
 
         label { display: block; margin-top: 12px; font-weight: bold; font-size: 0.9rem; color: #475569; }
         input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 16px; background: #f8fafc; }
+        .btn-send { background: #0f172a; color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; margin-top: 25px; font-weight: bold; cursor: pointer; }
+        .btn-back { background: #f1f5f9; color: #475569; border: none; padding: 10px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; font-weight: bold; }
         
+        /* Diseño de Checks Preventivos y Laboratorio */
         .rutinas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .check-item { 
             display: flex; align-items: center; gap: 8px; background: #f1f5f9; 
@@ -51,13 +53,6 @@
         }
         .check-item input[type="checkbox"] { width: 18px; height: 18px; margin: 0; cursor: pointer; }
         
-        /* Estilo para inputs de cantidades en Renovación */
-        .qty-item { background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center; }
-        .qty-item label { font-size: 0.7rem; margin: 0; }
-        .qty-item input { text-align: center; padding: 5px; margin-top: 5px; }
-
-        .btn-send { background: #0f172a; color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; margin-top: 25px; font-weight: bold; cursor: pointer; }
-        .btn-back { background: #f1f5f9; color: #475569; border: none; padding: 10px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; font-weight: bold; }
         .img-preview { width: 100%; border-radius: 10px; margin-top: 10px; display: none; border: 2px solid #e2e8f0; }
     </style>
 </head>
@@ -67,15 +62,14 @@
     <div id="menuPrincipal">
         <div style="text-align: center; margin-bottom: 20px;">
             <img src="https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/icons/icon-192.png" style="width: 60px; border-radius: 12px;">
-            <h2 style="margin: 10px 0 0 0;">SGS Valledupar</h2>
+            <h2 style="margin: 10px 0 0 0;">Gestión Semafórica Valledupar</h2>
         </div>
         
         <div class="menu-grid">
-            <button class="menu-btn btn-pendiente" onclick="abrirForm('INVENTARIO_FALLA')">1. INVENTARIO DE FALLA <span>→</span></button>
-            <button class="menu-btn btn-reparacion" onclick="abrirForm('REPARACION')">2. REGISTRAR ARREGLO <span>→</span></button>
-            <button class="menu-btn btn-lab" onclick="abrirForm('LABORATORIO')">3. LABORATORIO / TALLER <span>→</span></button>
-            <button class="menu-btn btn-preventivo" onclick="abrirForm('PREVENTIVO')">4. MANT. PREVENTIVO <span>→</span></button>
-            <button class="menu-btn btn-renovacion" onclick="abrirForm('RENOVACION')">5. RENOVACIÓN TOTAL <span>→</span></button>
+            <button class="menu-btn btn-reparacion" onclick="abrirForm('REPARACION')">🛠️ REGISTRAR ARREGLO <span>→</span></button>
+            <button class="menu-btn btn-pendiente" onclick="abrirForm('INVENTARIO_FALLA')">📝 INVENTARIO DE FALLA <span>→</span></button>
+            <button class="menu-btn btn-laboratorio" onclick="abrirForm('LABORATORIO')">🔬 LABORATORIO / TALLER <span>→</span></button>
+            <button class="menu-btn btn-preventivo" onclick="abrirForm('PREVENTIVO')">✅ MANT. PREVENTIVO <span>→</span></button>
         </div>
 
         <div class="search-container">
@@ -92,8 +86,8 @@
     </div>
 
     <div id="pantallaForm" class="card">
-        <button class="btn-back" onclick="irAlMenu()">← Volver al Menú</button>
-        <h2 id="tituloSeccion" style="margin:0; color: #0f172a; font-size: 1.2rem;"></h2>
+        <button class="btn-back" onclick="irAlMenu()">← Volver</button>
+        <h2 id="tituloSeccion" style="margin:0; color: #0f172a;"></h2>
         <form id="mainForm">
             <input type="hidden" id="tipoRegistro">
             
@@ -103,11 +97,34 @@
             <label>Técnico</label>
             <select id="tecnico" required>
                 <option value="">Seleccione Técnico</option>
-                <option>Luis Gutierrez</option><option>Guanerge Salcedo</option><option>Juan Bolaños</option><option>Jose Colmenares</option><option>William Orcasita</option>
+                <option>Luis Gutierrez</option><option>Guanerge Salcedo</option>
+                <option>Juan Bolaños</option><option>Jose Colmenares</option>
+                <option>William Orcasita</option>
             </select>
             
-            <label id="lblDireccion">Ubicación / Código VUP</label>
-            <input type="text" id="direccion" required>
+            <div id="bloqueDireccion">
+                <label>Ubicación / Código VUP</label>
+                <input type="text" id="direccion">
+            </div>
+
+            <div id="bloqueLaboratorio" style="display:none">
+                <label>Componente Reparado</label>
+                <select id="componenteReparado">
+                    <option value="">Seleccione...</option>
+                    <option>Fuentes de poder</option>
+                    <option>Lamparas led</option>
+                    <option>Tarjeta electronica</option>
+                    <option>UPS</option>
+                </select>
+                <label>Tarea Realizada</label>
+                <div class="rutinas-grid">
+                    <div class="check-item"><input type="checkbox" class="chk-lab" value="Condensadores"> Condensadores</div>
+                    <div class="check-item"><input type="checkbox" class="chk-lab" value="Resistencias"> Resistencias</div>
+                    <div class="check-item"><input type="checkbox" class="chk-lab" value="Diodos"> Diodos</div>
+                    <div class="check-item"><input type="checkbox" class="chk-lab" value="Soldadura"> Soldadura</div>
+                    <div class="check-item"><input type="checkbox" class="chk-lab" value="Reguladores"> Reguladores</div>
+                </div>
+            </div>
 
             <div id="bloqueFallas">
                 <label>Tipo de Falla</label>
@@ -129,21 +146,9 @@
                 </div>
             </div>
 
-            <div id="bloqueLaboratorio" style="display:none">
-                <label>Componente Reparado</label>
-                <select id="compLab">
-                    <option value="">Seleccione...</option>
-                    <option>Fuente de Poder</option>
-                    <option>Lámpara LED</option>
-                    <option>Tarjeta Electrónica</option>
-                </select>
-                <label>Tareas de Laboratorio</label>
-                <div class="rutinas-grid">
-                    <div class="check-item"><input type="checkbox" class="chk-lab" value="Reparacion Fuente"> Rep. Fuente</div>
-                    <div class="check-item"><input type="checkbox" class="chk-lab" value="Ajuste Voltaje"> Ajuste Voltaje</div>
-                    <div class="check-item"><input type="checkbox" class="chk-lab" value="Rep. Tarjeta"> Rep. Tarjeta</div>
-                    <div class="check-item"><input type="checkbox" class="chk-lab" value="Cambio Modulo LED"> Cambio LED</div>
-                </div>
+            <div id="bloquePrioridad" style="display:none">
+                <label>Prioridad</label>
+                <select id="prioridad"><option>Baja</option><option>Media</option><option>ALTA</option></select>
             </div>
 
             <div id="bloquePreventivo" style="display:none">
@@ -151,7 +156,7 @@
                 <div class="rutinas-grid">
                     <div class="check-item"><input type="checkbox" class="chk-prev" value="Limpieza Controlador"> Limpieza Controlador</div>
                     <div class="check-item"><input type="checkbox" class="chk-prev" value="Ajuste Tornillos"> Ajuste Tornillos</div>
-                    <div class="check-item"><input type="checkbox" class="chk-prev" value="Ajuste Tarjetas"> Tarjetas Elec.</div>
+                    <div class="check-item"><input type="checkbox" class="chk-prev" value="Ajuste Tarjetas"> Ajus. Tarjetas Elec.</div>
                     <div class="check-item"><input type="checkbox" class="chk-prev" value="Limpieza Postes"> Limpieza Postes</div>
                     <div class="check-item"><input type="checkbox" class="chk-prev" value="Limpieza Semaforos"> Limpieza Semáforos</div>
                     <div class="check-item"><input type="checkbox" class="chk-prev" value="Ajuste Polo Tierra"> Ajuste Polo Tierra</div>
@@ -160,39 +165,15 @@
                 </div>
             </div>
 
-            <div id="bloqueRenovacion" style="display:none">
-                <label>Cantidades Instaladas</label>
-                <div class="rutinas-grid">
-                    <div class="qty-item"><label>Poste T1</label><input type="number" class="renov-qty" data-n="PosteT1" value="0"></div>
-                    <div class="qty-item"><label>Poste T2</label><input type="number" class="renov-qty" data-n="PosteT2" value="0"></div>
-                    <div class="qty-item"><label>Semaf S1</label><input type="number" class="renov-qty" data-n="S1" value="0"></div>
-                    <div class="qty-item"><label>Semaf S2</label><input type="number" class="renov-qty" data-n="S2" value="0"></div>
-                    <div class="qty-item"><label>Peatonal S3</label><input type="number" class="renov-qty" data-n="S3" value="0"></div>
-                </div>
-                <label>Instalaciones Técnicas</label>
-                <div class="rutinas-grid">
-                    <div class="check-item"><input type="checkbox" class="chk-renov" value="Cableado Señal/Elec"> Cableado S/E</div>
-                    <div class="check-item"><input type="checkbox" class="chk-renov" value="Controlador"> Controlador</div>
-                    <div class="check-item"><input type="checkbox" class="chk-renov" value="Anclajes"> Anclajes</div>
-                    <div class="check-item"><input type="checkbox" class="chk-renov" value="Polo a Tierra"> Polo a Tierra</div>
-                    <div class="check-item"><input type="checkbox" class="chk-renov" value="Reja Gabinete"> Reja Gabinete</div>
-                </div>
-            </div>
-
-            <div id="bloquePrioridad" style="display:none">
-                <label>Prioridad</label>
-                <select id="prioridad"><option>Baja</option><option>Media</option><option>ALTA</option></select>
-            </div>
-
-            <label>Observaciones / Detalles</label>
+            <label>Observaciones</label>
             <textarea id="observaciones" rows="2"></textarea>
 
-            <label>Foto Evidencia 1</label>
+            <label>Foto ANTES / Evidencia</label>
             <input type="file" id="foto1" accept="image/*" capture="camera" onchange="preview(this, 'v1')">
             <img id="v1" class="img-preview">
 
             <div id="foto2Contenedor">
-                <label>Foto Evidencia 2</label>
+                <label>Foto DESPUÉS / Arreglo</label>
                 <input type="file" id="foto2" accept="image/*" capture="camera" onchange="preview(this, 'v2')">
                 <img id="v2" class="img-preview">
             </div>
@@ -204,10 +185,33 @@
 </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw7YGL0nPg8PxoVPgKxWM4fzs2C538F3zJBfVIqsNXKfFfW9wUTCgk4yXvmOn3zzN0h/exec"; 
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw7YGL0nPg8PxoVPgKxWM4fzs2C538F3zJBfVIqsNXKfFfW9wUTCgk4yXvmOn3zzN0h/exec";
 let coords = "Buscando GPS...";
+let modoBusqueda = "historial";
 
 navigator.geolocation.getCurrentPosition(p => coords = `${p.coords.latitude},${p.coords.longitude}`);
+
+function cambiarTab(modo) {
+    modoBusqueda = modo;
+    document.getElementById("tabHist").classList.toggle("active-tab", modo === 'historial');
+    document.getElementById("tabCont").classList.toggle("active-tab", modo === 'controladores');
+}
+
+async function ejecutarBusqueda() {
+    const term = document.getElementById("txtBuscar").value;
+    const resDiv = document.getElementById("resultadosBusqueda");
+    if(!term) return;
+    resDiv.innerHTML = "⌛...";
+    const q = modoBusqueda === 'historial' ? `buscar=${term}` : `getControladores=true&filtro=${term}`;
+    try {
+        const r = await fetch(`${WEB_APP_URL}?${q}`);
+        const data = await r.json();
+        resDiv.innerHTML = "";
+        data.forEach(item => {
+            resDiv.innerHTML += `<div class="result-card">${item.fecha || item.codigo} - ${item.tipo || item.direccion}</div>`;
+        });
+    } catch (e) { resDiv.innerHTML = "Error"; }
+}
 
 const diccionarioActividades = {
     "Lampara Vehicular": ["Módulo LED", "Limpieza", "Visera", "Voltaje"],
@@ -237,18 +241,17 @@ function abrirForm(tipo) {
     document.getElementById("tipoRegistro").value = tipo;
     document.getElementById("tituloSeccion").textContent = tipo.replace(/_/g, ' ');
     
-    // Visibilidad de bloques
+    // Control de visibilidad sin cambiar lógica original
+    document.getElementById("bloqueDireccion").style.display = (tipo === "LABORATORIO") ? "none" : "block";
     document.getElementById("bloqueFallas").style.display = (tipo === "REPARACION" || tipo === "INVENTARIO_FALLA") ? "block" : "none";
-    document.getElementById("bloqueLaboratorio").style.display = (tipo === "LABORATORIO") ? "block" : "none";
-    document.getElementById("bloquePreventivo").style.display = (tipo === "PREVENTIVO") ? "block" : "none";
-    document.getElementById("bloqueRenovacion").style.display = (tipo === "RENOVACION") ? "block" : "none";
+    document.getElementById("bloqueActividad").style.display = (tipo === "REPARACION") ? "block" : "none";
     document.getElementById("bloquePrioridad").style.display = (tipo === "INVENTARIO_FALLA") ? "block" : "none";
+    document.getElementById("bloquePreventivo").style.display = (tipo === "PREVENTIVO") ? "block" : "none";
+    document.getElementById("bloqueLaboratorio").style.display = (tipo === "LABORATORIO") ? "block" : "none";
     document.getElementById("foto2Contenedor").style.display = (tipo === "INVENTARIO_FALLA") ? "none" : "block";
-
-    // Color del botón
+    
     const btn = document.getElementById("btnGuardar");
-    const colores = { "INVENTARIO_FALLA": "#3b82f6", "REPARACION": "#059669", "LABORATORIO": "#d97706", "PREVENTIVO": "#8b5cf6", "RENOVACION": "#64748b" };
-    btn.style.background = colores[tipo] || "#0f172a";
+    btn.style.background = (tipo === "PREVENTIVO") ? "#8b5cf6" : (tipo === "LABORATORIO") ? "#f59e0b" : "#0f172a";
 }
 
 function irAlMenu() {
@@ -293,17 +296,19 @@ document.getElementById("mainForm").onsubmit = async e => {
     btn.disabled = true;
     document.getElementById("msgStatus").textContent = "⏳ Enviando...";
 
-    let actividadFinal = "";
+    let actividadFinal = document.getElementById("actividad").value;
+    let direccionFinal = document.getElementById("direccion").value;
+
     if(tipo === "PREVENTIVO") {
-        actividadFinal = "MANT. PREV: " + Array.from(document.querySelectorAll('.chk-prev:checked')).map(cb => cb.value).join(', ');
-    } else if(tipo === "LABORATORIO") {
-        actividadFinal = `[${document.getElementById('compLab').value}] ` + Array.from(document.querySelectorAll('.chk-lab:checked')).map(cb => cb.value).join(', ');
-    } else if(tipo === "RENOVACION") {
-        let q = Array.from(document.querySelectorAll('.renov-qty')).filter(i => i.value > 0).map(i => `${i.dataset.n}:${i.value}`).join(' | ');
-        let e = Array.from(document.querySelectorAll('.chk-renov:checked')).map(cb => cb.value).join(', ');
-        actividadFinal = `RENOVACIÓN - Qty:(${q}) Extras:(${e})`;
-    } else {
-        actividadFinal = document.getElementById("actividad").value;
+        actividadFinal = Array.from(document.querySelectorAll('.chk-prev:checked')).map(cb => cb.value).join(', ');
+    }
+    
+    // Nueva lógica para Laboratorio
+    if(tipo === "LABORATORIO") {
+        const comp = document.getElementById("componenteReparado").value;
+        const tareas = Array.from(document.querySelectorAll('.chk-lab:checked')).map(cb => cb.value).join(', ');
+        actividadFinal = "Componente: " + comp + " | Tareas: " + tareas;
+        direccionFinal = "Taller Laboratorio";
     }
 
     const datos = {
@@ -311,8 +316,8 @@ document.getElementById("mainForm").onsubmit = async e => {
         tipo: tipo,
         fecha: document.getElementById("fecha").value,
         tecnico: document.getElementById("tecnico").value,
-        direccion: document.getElementById("direccion").value,
-        falla: document.getElementById("falla").value || "N/A",
+        direccion: direccionFinal,
+        falla: document.getElementById("falla").value,
         actividad: actividadFinal,
         prioridad: document.getElementById("prioridad").value,
         observaciones: document.getElementById("observaciones").value,
@@ -320,16 +325,29 @@ document.getElementById("mainForm").onsubmit = async e => {
         foto1: await procesarFoto(document.getElementById("foto1").files[0]),
         foto2: await procesarFoto(document.getElementById("foto2").files[0])
     };
-
     try {
         await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(datos) });
         document.getElementById("msgStatus").innerHTML = "✅ ¡REGISTRO GUARDADO!";
         setTimeout(() => location.reload(), 2000);
     } catch(err) {
-        document.getElementById("msgStatus").innerHTML = "❌ Error de conexión";
+        document.getElementById("msgStatus").innerHTML = "❌ Error al conectar";
         btn.disabled = false;
     }
 };
+
+if('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('https://semaforosvupsys-cmd.github.io/formulario-mantenimiento/sw.js?v=3')
+    .then(reg => {
+        reg.onupdatefound = () => {
+            const installingWorker = reg.installing;
+            installingWorker.onstatechange = () => {
+                if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    location.reload();
+                }
+            };
+        };
+    });
+}
 </script>
 </body>
 </html>
