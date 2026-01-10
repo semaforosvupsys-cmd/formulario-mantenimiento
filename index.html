@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -297,18 +297,16 @@ document.getElementById("mainForm").onsubmit = async e => {
     document.getElementById("msgStatus").textContent = "⏳ Enviando...";
 
     let actividadFinal = document.getElementById("actividad").value;
+    let fallaFinal = document.getElementById("falla").value;
     let direccionFinal = document.getElementById("direccion").value;
 
-    if(tipo === "PREVENTIVO") {
-        actividadFinal = Array.from(document.querySelectorAll('.chk-prev:checked')).map(cb => cb.value).join(', ');
-    }
-    
-    // Nueva lógica para Laboratorio
+    // Lógica para Laboratorio: Cruza los datos para que caigan en las columnas D y E
     if(tipo === "LABORATORIO") {
-        const comp = document.getElementById("componenteReparado").value;
-        const tareas = Array.from(document.querySelectorAll('.chk-lab:checked')).map(cb => cb.value).join(', ');
-        actividadFinal = "Componente: " + comp + " | Tareas: " + tareas;
-        direccionFinal = "Taller Laboratorio";
+        fallaFinal = document.getElementById("componenteReparado").value; // Va a "Detalle Reparacion"
+        actividadFinal = Array.from(document.querySelectorAll('.chk-lab:checked')).map(cb => cb.value).join(', '); // Va a "actividad realizada"
+        direccionFinal = "Taller"; 
+    } else if(tipo === "PREVENTIVO") {
+        actividadFinal = Array.from(document.querySelectorAll('.chk-prev:checked')).map(cb => cb.value).join(', ');
     }
 
     const datos = {
@@ -317,7 +315,7 @@ document.getElementById("mainForm").onsubmit = async e => {
         fecha: document.getElementById("fecha").value,
         tecnico: document.getElementById("tecnico").value,
         direccion: direccionFinal,
-        falla: document.getElementById("falla").value,
+        falla: fallaFinal,
         actividad: actividadFinal,
         prioridad: document.getElementById("prioridad").value,
         observaciones: document.getElementById("observaciones").value,
@@ -325,6 +323,7 @@ document.getElementById("mainForm").onsubmit = async e => {
         foto1: await procesarFoto(document.getElementById("foto1").files[0]),
         foto2: await procesarFoto(document.getElementById("foto2").files[0])
     };
+
     try {
         await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(datos) });
         document.getElementById("msgStatus").innerHTML = "✅ ¡REGISTRO GUARDADO!";
