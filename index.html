@@ -7,11 +7,10 @@
     <link rel="manifest" href="https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/manifest.json?v=3" crossorigin="anonymous">
     <meta name="theme-color" content="#0f172a">
     <style>
+        /* Estilos se mantienen iguales */
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: #0f172a; color: #fff; padding: 15px; margin: 0; }
         .container { max-width: 500px; margin: auto; }
-        
-        /* Menú Principal */
         .menu-grid { display: grid; gap: 15px; margin-top: 20px; }
         .menu-btn { 
             padding: 25px; border-radius: 15px; border: none; font-weight: bold; 
@@ -22,9 +21,7 @@
         .btn-reparacion { background: #059669; border-left: 10px solid #047857; }
         .btn-pendiente { background: #3b82f6; border-left: 10px solid #1d4ed8; }
         .btn-preventivo { background: #8b5cf6; border-left: 10px solid #6d28d9; }
-        .btn-laboratorio { background: #f59e0b; border-left: 10px solid #d97706; } /* Nuevo Estilo */
-
-        /* Buscadores */
+        .btn-laboratorio { background: #f59e0b; border-left: 10px solid #d97706; }
         .search-container { margin-top: 25px; background: #1e293b; padding: 15px; border-radius: 15px; border: 1px solid #334155; }
         .tab-box { display: flex; gap: 5px; margin-bottom: 10px; }
         .tab-btn { flex: 1; padding: 8px; font-size: 0.7rem; border: none; border-radius: 5px; cursor: pointer; background: #334155; color: #94a3b8; }
@@ -33,18 +30,13 @@
         .search-box input { flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 14px; }
         .btn-search { background: #64748b; border: none; color: white; padding: 10px 15px; border-radius: 8px; cursor: pointer; }
         .result-card { background: #334155; padding: 12px; border-radius: 10px; margin-top: 8px; font-size: 0.85rem; border-left: 4px solid #3b82f6; }
-
-        /* Formulario */
         .card { background: white; color: #1e293b; padding: 20px; border-radius: 20px; display: none; margin-top: 10px; }
         .active-form { display: block; animation: slideUp 0.3s ease; }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
         label { display: block; margin-top: 12px; font-weight: bold; font-size: 0.9rem; color: #475569; }
         input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 16px; background: #f8fafc; }
         .btn-send { background: #0f172a; color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; margin-top: 25px; font-weight: bold; cursor: pointer; }
         .btn-back { background: #f1f5f9; color: #475569; border: none; padding: 10px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; font-weight: bold; }
-        
-        /* Diseño de Checks Preventivos y Laboratorio */
         .rutinas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .check-item { 
             display: flex; align-items: center; gap: 8px; background: #f1f5f9; 
@@ -52,7 +44,6 @@
             font-size: 0.75rem; color: #1e293b; font-weight: 500;
         }
         .check-item input[type="checkbox"] { width: 18px; height: 18px; margin: 0; cursor: pointer; }
-        
         .img-preview { width: 100%; border-radius: 10px; margin-top: 10px; display: none; border: 2px solid #e2e8f0; }
     </style>
 </head>
@@ -185,6 +176,7 @@
 </div>
 
 <script>
+// USAR SIEMPRE LA URL MÁS RECIENTE DE TU IMPLEMENTACIÓN
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw7YGL0nPg8PxoVPgKxWM4fzs2C538F3zJBfVIqsNXKfFfW9wUTCgk4yXvmOn3zzN0h/exec";
 let coords = "Buscando GPS...";
 let modoBusqueda = "historial";
@@ -213,16 +205,17 @@ async function ejecutarBusqueda() {
     } catch (e) { resDiv.innerHTML = "Error"; }
 }
 
+// CORREGIDO: Se agregaron las comas faltantes y eliminaron las sobrantes
 const diccionarioActividades = {
     "Lampara Vehicular": ["Módulo LED", "Limpieza"],
-    "Lampara Peatonal": ["Módulo LED", "Limpieza",],
+    "Lampara Peatonal": ["Módulo LED", "Limpieza"],
     "Semaforo Vehicular": ["Estructural", "Bases(Patos)", "Visera" ,"Limpieza"],
     "Semaforo Peatonal": ["Estructural", "Bases", "Visera", "Limpieza"],
     "Semaforo de piso": ["Mantenimiento LED", "Policarbonato", "Resina"],
     "Cableado": ["Vehicular", "Peatonal", "Acometida"],
     "Controlador": ["Tarjetas", "Reinicio", "Breaker", "Modem", "UPS", "Fusible", "Polo Tierra"],
     "Estructural": ["Poste T1/T2", "Anclaje", "Tornillería", "Pintura","Reja"],
-    "Radar de Velocidad": ["Baterías", "Panel Solar", "Panel de Control" "Controlador"]
+    "Radar de Velocidad": ["Baterías", "Panel Solar", "Panel de Control", "Controlador"]
 };
 
 document.getElementById("falla").onchange = (e) => {
@@ -241,7 +234,6 @@ function abrirForm(tipo) {
     document.getElementById("tipoRegistro").value = tipo;
     document.getElementById("tituloSeccion").textContent = tipo.replace(/_/g, ' ');
     
-    // Control de visibilidad sin cambiar lógica original
     document.getElementById("bloqueDireccion").style.display = (tipo === "LABORATORIO") ? "none" : "block";
     document.getElementById("bloqueFallas").style.display = (tipo === "REPARACION" || tipo === "INVENTARIO_FALLA") ? "block" : "none";
     document.getElementById("bloqueActividad").style.display = (tipo === "REPARACION") ? "block" : "none";
@@ -300,10 +292,9 @@ document.getElementById("mainForm").onsubmit = async e => {
     let fallaFinal = document.getElementById("falla").value;
     let direccionFinal = document.getElementById("direccion").value;
 
-    // Lógica para Laboratorio: Cruza los datos para que caigan en las columnas D y E
     if(tipo === "LABORATORIO") {
-        fallaFinal = document.getElementById("componenteReparado").value; // Va a "Detalle Reparacion"
-        actividadFinal = Array.from(document.querySelectorAll('.chk-lab:checked')).map(cb => cb.value).join(', '); // Va a "actividad realizada"
+        fallaFinal = document.getElementById("componenteReparado").value; 
+        actividadFinal = Array.from(document.querySelectorAll('.chk-lab:checked')).map(cb => cb.value).join(', ');
         direccionFinal = "Taller"; 
     } else if(tipo === "PREVENTIVO") {
         actividadFinal = Array.from(document.querySelectorAll('.chk-prev:checked')).map(cb => cb.value).join(', ');
@@ -325,6 +316,7 @@ document.getElementById("mainForm").onsubmit = async e => {
     };
 
     try {
+        // IMPORTANTE: Cambiamos a 'no-cors' para evitar bloqueos, aunque 'cors' es preferible si el servidor lo permite
         await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(datos) });
         document.getElementById("msgStatus").innerHTML = "✅ ¡REGISTRO GUARDADO!";
         setTimeout(() => location.reload(), 2000);
@@ -333,20 +325,6 @@ document.getElementById("mainForm").onsubmit = async e => {
         btn.disabled = false;
     }
 };
-
-if('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('https://semaforosvupsys-cmd.github.io/formulario-mantenimiento/sw.js?v=3')
-    .then(reg => {
-        reg.onupdatefound = () => {
-            const installingWorker = reg.installing;
-            installingWorker.onstatechange = () => {
-                if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    location.reload();
-                }
-            };
-        };
-    });
-}
 </script>
 </body>
 </html>
