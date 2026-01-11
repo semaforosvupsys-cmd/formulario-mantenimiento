@@ -214,15 +214,15 @@ async function ejecutarBusqueda() {
 }
 
 const diccionarioActividades = {
-    "Lampara Vehicular": ["Módulo LED", "Limpieza", "Visera", "Voltaje"],
-    "Lampara Peatonal": ["Módulo LED", "Limpieza", "Pulsador"],
-    "Semaforo Vehicular": ["Estructural", "Cara", "Pernos"],
-    "Semaforo Peatonal": ["Estructural", "Soporte", "Limpieza"],
+    "Lampara Vehicular": ["Módulo LED", "Limpieza"],
+    "Lampara Peatonal": ["Módulo LED", "Limpieza",],
+    "Semaforo Vehicular": ["Estructural", "Bases(Patos)", "Visera" ,"Limpieza"],
+    "Semaforo Peatonal": ["Estructural", "Bases", "Visera", "Limpieza"],
     "Semaforo de piso": ["Mantenimiento LED", "Policarbonato", "Resina"],
     "Cableado": ["Vehicular", "Peatonal", "Acometida"],
-    "Controlador": ["Tarjetas", "Reinicio", "Breaker", "GPS/4G", "UPS", "Fusible"],
-    "Estructural": ["Poste T1/T2", "Anclaje", "Tornillería"],
-    "Radar de Velocidad": ["Baterías", "Panel Solar", "Calibración"]
+    "Controlador": ["Tarjetas", "Reinicio", "Breaker", "Modem", "UPS", "Fusible", "Polo Tierra"],
+    "Estructural": ["Poste T1/T2", "Anclaje", "Tornillería", "Pintura","Reja"],
+    "Radar de Velocidad": ["Baterías", "Panel Solar", "Panel de Control" "Controlador"]
 };
 
 document.getElementById("falla").onchange = (e) => {
