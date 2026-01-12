@@ -57,18 +57,25 @@
 <body>
 
 <div class="container">
-    <div id="menuPrincipal">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <img src="https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/icons/icon-192.png" style="width: 60px; border-radius: 12px;">
-            <h2 style="margin: 10px 0 0 0;">Gestión Semafórica Valledupar</h2>
-        </div>
+  <div id="menuPrincipal">
+    <div style="text-align: center; margin-bottom: 25px; padding-top: 10px;">
+        <img src="https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/icons/logo.png" 
+             style="width: 140px; height: auto; border-radius: 10px; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5));">
         
-        <div class="menu-grid">
-            <button class="menu-btn btn-pendiente" onclick="abrirForm('INVENTARIO_FALLA')">📝 INVENTARIO DE FALLA <span>→</span></button>
-            <button class="menu-btn btn-reparacion" onclick="abrirForm('REPARACION')">🛠️ REGISTRAR ARREGLO <span>→</span></button>
-            <button class="menu-btn btn-laboratorio" onclick="abrirForm('LABORATORIO')">🔬 LABORATORIO / TALLER <span>→</span></button>
-            <button class="menu-btn btn-preventivo" onclick="abrirForm('PREVENTIVO')">✅ MANT. PREVENTIVO <span>→</span></button>
-        </div>
+        <h2 style="margin: 12px 0 0 0; font-size: 1.5rem; letter-spacing: 1px; color: #f8fafc;">
+            SGS VALLEDUPAR
+        </h2>
+        <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; font-weight: 300;">
+            Gestión Semafórica Valledupar
+        </p>
+    </div>
+    
+    <div class="menu-grid">
+        <button class="menu-btn btn-pendiente" onclick="abrirForm('INVENTARIO_FALLA')">📝 INVENTARIO DE FALLA <span>→</span></button>
+        <button class="menu-btn btn-reparacion" onclick="abrirForm('REPARACION')">🛠️ REGISTRAR ARREGLO <span>→</span></button>
+        <button class="menu-btn btn-laboratorio" onclick="abrirForm('LABORATORIO')">🔬 LABORATORIO / TALLER <span>→</span></button>
+        <button class="menu-btn btn-preventivo" onclick="abrirForm('PREVENTIVO')">✅ MANT. PREVENTIVO <span>→</span></button>
+     </div>
 
         <div class="search-container">
             <div class="tab-box">
