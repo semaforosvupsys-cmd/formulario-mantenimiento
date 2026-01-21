@@ -1,7 +1,8 @@
 {
   "name": "Mantenimiento Semafórico Valledupar",
   "short_name": "SGS VUP",
-  "start_url": "https://script.google.com/macros/s/AKfycbw7YGL0nPg8PxoVPgKxWM4fzs2C538F3zJBfVIqsNXKfFfW9wUTCgk4yXvmOn3zzN0h/exec",
+  "description": "Sistema de Gestión Semafórica de Valledupar",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
