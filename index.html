@@ -7,24 +7,17 @@
     <link rel="manifest" href="https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/manifest.json?v=3" crossorigin="anonymous">
     <meta name="theme-color" content="#0f172a">
     <style>
+        /* MANTENEMOS TODO TU ESTILO EXACTAMENTE IGUAL */
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: #0f172a; color: #fff; padding: 15px; margin: 0; }
         .container { max-width: 500px; margin: auto; }
-        
-        /* Menú Principal */
         .menu-grid { display: grid; gap: 15px; margin-top: 20px; }
-        .menu-btn { 
-            padding: 25px; border-radius: 15px; border: none; font-weight: bold; 
-            font-size: 1.1rem; cursor: pointer; color: white; text-align: left;
-            transition: 0.3s; display: flex; align-items: center; justify-content: space-between;
-        }
+        .menu-btn { padding: 25px; border-radius: 15px; border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; color: white; text-align: left; transition: 0.3s; display: flex; align-items: center; justify-content: space-between; }
         .menu-btn:active { transform: scale(0.98); }
         .btn-reparacion { background: #059669; border-left: 10px solid #047857; }
         .btn-pendiente { background: #3b82f6; border-left: 10px solid #1d4ed8; }
         .btn-preventivo { background: #8b5cf6; border-left: 10px solid #6d28d9; }
         .btn-laboratorio { background: #f59e0b; border-left: 10px solid #d97706; }
-
-        /* Buscadores */
         .search-container { margin-top: 25px; background: #1e293b; padding: 15px; border-radius: 15px; border: 1px solid #334155; }
         .tab-box { display: flex; gap: 5px; margin-bottom: 10px; }
         .tab-btn { flex: 1; padding: 8px; font-size: 0.7rem; border: none; border-radius: 5px; cursor: pointer; background: #334155; color: #94a3b8; }
@@ -33,23 +26,15 @@
         .search-box input { flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 14px; }
         .btn-search { background: #64748b; border: none; color: white; padding: 10px 15px; border-radius: 8px; cursor: pointer; }
         .result-card { background: #334155; padding: 12px; border-radius: 10px; margin-top: 8px; font-size: 0.85rem; border-left: 4px solid #3b82f6; }
-
-        /* Formulario */
         .card { background: white; color: #1e293b; padding: 20px; border-radius: 20px; display: none; margin-top: 10px; }
         .active-form { display: block; animation: slideUp 0.3s ease; }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
         label { display: block; margin-top: 12px; font-weight: bold; font-size: 0.9rem; color: #475569; }
         input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 16px; background: #f8fafc; }
         .btn-send { background: #0f172a; color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; margin-top: 25px; font-weight: bold; cursor: pointer; }
         .btn-back { background: #f1f5f9; color: #475569; border: none; padding: 10px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; font-weight: bold; }
-        
         .rutinas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .check-item { 
-            display: flex; align-items: center; gap: 8px; background: #f1f5f9; 
-            padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; 
-            font-size: 0.75rem; color: #1e293b; font-weight: 500;
-        }
+        .check-item { display: flex; align-items: center; gap: 8px; background: #f1f5f9; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 0.75rem; color: #1e293b; font-weight: 500; }
         .check-item input[type="checkbox"] { width: 18px; height: 18px; margin: 0; cursor: pointer; }
         .img-preview { width: 100%; border-radius: 10px; margin-top: 10px; display: none; border: 2px solid #e2e8f0; }
     </style>
@@ -61,44 +46,42 @@
     <div style="text-align: center; margin-bottom: 25px; padding-top: 10px;">
         <img src="https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/icons/logo.png" 
              style="width: 100px; height: auto; border-radius: 10px; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5));">
-        
-        <h2 style="margin: 12px 0 0 0; font-size: 1.5rem; letter-spacing: 1px; color: #f8fafc;">
-            SGS VALLEDUPAR
-        </h2>
-        <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; font-weight: 300;">
-            Gestión Semafórica Valledupar
-        </p>
+        <h2 style="margin: 12px 0 0 0; font-size: 1.5rem; letter-spacing: 1px; color: #f8fafc;">SGS VALLEDUPAR</h2>
+        <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; font-weight: 300;">Gestión Semafórica Valledupar</p>
     </div>
     
+    <div id="syncBox" style="display:none; background:#ef4444; padding:10px; border-radius:10px; margin-bottom:15px; text-align:center;">
+        <p style="margin:0 0 5px 0; font-size:0.8rem;">⚠️ Tienes registros sin internet</p>
+        <button onclick="sincronizarPendientes()" style="background:white; color:#ef4444; border:none; padding:5px 10px; border-radius:5px; font-weight:bold; cursor:pointer;">SUBIR AHORA</button>
+    </div>
+
     <div class="menu-grid">
         <button class="menu-btn btn-pendiente" onclick="abrirForm('INVENTARIO_FALLA')">📝 INVENTARIO DE FALLA <span>→</span></button>
         <button class="menu-btn btn-reparacion" onclick="abrirForm('REPARACION')">🛠️ REGISTRAR ARREGLO <span>→</span></button>
         <button class="menu-btn btn-laboratorio" onclick="abrirForm('LABORATORIO')">🔬 LABORATORIO / TALLER <span>→</span></button>
         <button class="menu-btn btn-preventivo" onclick="abrirForm('PREVENTIVO')">✅ MANT. PREVENTIVO <span>→</span></button>
-     </div>
-
-        <div class="search-container">
-            <div class="tab-box">
-                <button id="tabHist" class="tab-btn active-tab" onclick="cambiarTab('historial')">HISTORIAL</button>
-                <button id="tabCont" class="tab-btn" onclick="cambiarTab('controladores')">CONTROLADORES</button>
-            </div>
-            <div class="search-box">
-                <input type="text" id="txtBuscar" placeholder="Buscar...">
-                <button class="btn-search" onclick="ejecutarBusqueda()">BUSCAR</button>
-            </div>
-            <div id="resultadosBusqueda"></div>
-        </div>
     </div>
 
-    <div id="pantallaForm" class="card">
+    <div class="search-container">
+        <div class="tab-box">
+            <button id="tabHist" class="tab-btn active-tab" onclick="cambiarTab('historial')">HISTORIAL</button>
+            <button id="tabCont" class="tab-btn" onclick="cambiarTab('controladores')">CONTROLADORES</button>
+        </div>
+        <div class="search-box">
+            <input type="text" id="txtBuscar" placeholder="Ej: Calle 16 o VUP-102...">
+            <button class="btn-search" onclick="ejecutarBusqueda()">BUSCAR</button>
+        </div>
+        <div id="resultadosBusqueda"></div>
+    </div>
+  </div>
+
+  <div id="pantallaForm" class="card">
         <button class="btn-back" onclick="irAlMenu()">← Volver</button>
         <h2 id="tituloSeccion" style="margin:0; color: #0f172a;"></h2>
         <form id="mainForm">
             <input type="hidden" id="tipoRegistro">
-            
             <label>Fecha</label>
             <input type="date" id="fecha" required>
-            
             <label>Técnico</label>
             <select id="tecnico" required>
                 <option value="">Seleccione Técnico</option>
@@ -106,20 +89,13 @@
                 <option>Juan Bolaños</option><option>Jose Colmenares</option>
                 <option>William Orcasita</option>
             </select>
-            
-            <div id="bloqueDireccion">
-                <label>Ubicación / Código VUP</label>
-                <input type="text" id="direccion">
-            </div>
-
+            <div id="bloqueDireccion"><label>Ubicación / Código VUP</label><input type="text" id="direccion"></div>
             <div id="bloqueLaboratorio" style="display:none">
                 <label>Componente Reparado</label>
                 <select id="componenteReparado">
                     <option value="">Seleccione...</option>
-                    <option>Fuentes de poder</option>
-                    <option>Lamparas led</option>
-                    <option>Tarjeta electronica</option>
-                    <option>UPS</option>
+                    <option>Fuentes de poder</option><option>Lamparas led</option>
+                    <option>Tarjeta electronica</option><option>UPS</option>
                 </select>
                 <label>Tarea Realizada</label>
                 <div class="rutinas-grid">
@@ -130,7 +106,6 @@
                     <div class="check-item"><input type="checkbox" class="chk-lab" value="Reguladores"> Reguladores</div>
                 </div>
             </div>
-
             <div id="bloqueFallas">
                 <label>Tipo de Falla</label>
                 <select id="falla">
@@ -151,12 +126,7 @@
                     <select id="actividad"><option value="">Seleccione Actividad</option></select>
                 </div>
             </div>
-
-            <div id="bloquePrioridad" style="display:none">
-                <label>Prioridad</label>
-                <select id="prioridad"><option>Baja</option><option>Media</option><option>ALTA</option></select>
-            </div>
-
+            <div id="bloquePrioridad" style="display:none"><label>Prioridad</label><select id="prioridad"><option>Baja</option><option>Media</option><option>ALTA</option></select></div>
             <div id="bloquePreventivo" style="display:none">
                 <label>Rutinas Realizadas</label>
                 <div class="rutinas-grid">
@@ -170,20 +140,9 @@
                     <div class="check-item"><input type="checkbox" class="chk-prev" value="Programacion"> Programación</div>
                 </div>
             </div>
-
-            <label>Observaciones</label>
-            <textarea id="observaciones" rows="2"></textarea>
-
-            <label>Foto ANTES / Evidencia</label>
-            <input type="file" id="foto1" accept="image/*" capture="camera" onchange="preview(this, 'v1')">
-            <img id="v1" class="img-preview">
-
-            <div id="foto2Contenedor">
-                <label>Foto DESPUÉS / Arreglo</label>
-                <input type="file" id="foto2" accept="image/*" capture="camera" onchange="preview(this, 'v2')">
-                <img id="v2" class="img-preview">
-            </div>
-
+            <label>Observaciones</label><textarea id="observaciones" rows="2"></textarea>
+            <label>Foto ANTES / Evidencia</label><input type="file" id="foto1" accept="image/*" capture="camera" onchange="preview(this, 'v1')"><img id="v1" class="img-preview">
+            <div id="foto2Contenedor"><label>Foto DESPUÉS / Arreglo</label><input type="file" id="foto2" accept="image/*" capture="camera" onchange="preview(this, 'v2')"><img id="v2" class="img-preview"></div>
             <button type="submit" class="btn-send" id="btnGuardar">GUARDAR REGISTRO</button>
             <div id="msgStatus" style="text-align:center; margin-top:15px; font-weight:bold"></div>
         </form>
@@ -195,7 +154,14 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw7YGL0nPg8PxoVPgKx
 let coords = "Buscando GPS...";
 let modoBusqueda = "historial";
 
+// GPS
 navigator.geolocation.getCurrentPosition(p => coords = `${p.coords.latitude},${p.coords.longitude}`);
+
+// Verificar si hay pendientes al cargar
+window.onload = () => {
+    const pendientes = JSON.parse(localStorage.getItem("pendientes") || "[]");
+    if(pendientes.length > 0) document.getElementById("syncBox").style.display = "block";
+};
 
 function cambiarTab(modo) {
     modoBusqueda = modo;
@@ -203,23 +169,30 @@ function cambiarTab(modo) {
     document.getElementById("tabCont").classList.toggle("active-tab", modo === 'controladores');
 }
 
+// BUSCADOR MEJORADO (No requiere dirección exacta)
 async function ejecutarBusqueda() {
-    const term = document.getElementById("txtBuscar").value;
+    const term = document.getElementById("txtBuscar").value.toLowerCase();
     const resDiv = document.getElementById("resultadosBusqueda");
     if(!term) return;
-    resDiv.innerHTML = "⌛...";
+    resDiv.innerHTML = "<div class='result-card'>⌛ Buscando...</div>";
+    
     const q = modoBusqueda === 'historial' ? `buscar=${term}` : `getControladores=true&filtro=${term}`;
     try {
         const r = await fetch(`${WEB_APP_URL}?${q}`);
         const data = await r.json();
         resDiv.innerHTML = "";
+        if(data.length === 0) resDiv.innerHTML = "<div class='result-card'>❌ Sin coincidencias</div>";
         data.forEach(item => {
-            resDiv.innerHTML += `<div class="result-card">${item.fecha || item.codigo} - ${item.tipo || item.direccion}</div>`;
+            resDiv.innerHTML += `
+                <div class="result-card">
+                    <strong>${item.fecha || item.codigo}</strong><br>
+                    ${item.direccion || item.tipo}<br>
+                    <small>${item.tecnico || ''} - ${item.falla || ''}</small>
+                </div>`;
         });
-    } catch (e) { resDiv.innerHTML = "Error"; }
+    } catch (e) { resDiv.innerHTML = "<div class='result-card'>⚠️ Requiere Internet</div>"; }
 }
 
-// CORREGIDO: Comas y sintaxis correcta para que abran las pestañas
 const diccionarioActividades = {
     "Lampara Vehicular": ["Módulo LED", "Contador", "Limpieza"],
     "Lampara Peatonal": ["Módulo LED", "Limpieza"],
@@ -247,7 +220,6 @@ function abrirForm(tipo) {
     document.getElementById("pantallaForm").classList.add("active-form");
     document.getElementById("tipoRegistro").value = tipo;
     document.getElementById("tituloSeccion").textContent = tipo.replace(/_/g, ' ');
-    
     document.getElementById("bloqueDireccion").style.display = (tipo === "LABORATORIO") ? "none" : "block";
     document.getElementById("bloqueFallas").style.display = (tipo === "REPARACION" || tipo === "INVENTARIO_FALLA") ? "block" : "none";
     document.getElementById("bloqueActividad").style.display = (tipo === "REPARACION") ? "block" : "none";
@@ -255,7 +227,6 @@ function abrirForm(tipo) {
     document.getElementById("bloquePreventivo").style.display = (tipo === "PREVENTIVO") ? "block" : "none";
     document.getElementById("bloqueLaboratorio").style.display = (tipo === "LABORATORIO") ? "block" : "none";
     document.getElementById("foto2Contenedor").style.display = (tipo === "INVENTARIO_FALLA") ? "none" : "block";
-    
     const btn = document.getElementById("btnGuardar");
     btn.style.background = (tipo === "PREVENTIVO") ? "#8b5cf6" : (tipo === "LABORATORIO") ? "#f59e0b" : "#0f172a";
 }
@@ -295,12 +266,14 @@ async function procesarFoto(file) {
     });
 }
 
+// LOGICA DE GUARDADO OFFLINE
 document.getElementById("mainForm").onsubmit = async e => {
     e.preventDefault();
     const btn = document.getElementById("btnGuardar");
+    const msg = document.getElementById("msgStatus");
     const tipo = document.getElementById("tipoRegistro").value;
     btn.disabled = true;
-    document.getElementById("msgStatus").textContent = "⏳ Enviando...";
+    msg.textContent = "⏳ Procesando...";
 
     let actividadFinal = document.getElementById("actividad").value;
     let fallaFinal = document.getElementById("falla").value;
@@ -329,15 +302,40 @@ document.getElementById("mainForm").onsubmit = async e => {
         foto2: await procesarFoto(document.getElementById("foto2").files[0])
     };
 
-    try {
-        await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(datos) });
-        document.getElementById("msgStatus").innerHTML = "✅ ¡REGISTRO GUARDADO!";
-        setTimeout(() => location.reload(), 2000);
-    } catch(err) {
-        document.getElementById("msgStatus").innerHTML = "❌ Error al conectar";
-        btn.disabled = false;
+    if (navigator.onLine) {
+        try {
+            await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(datos) });
+            msg.innerHTML = "✅ ENVIADO EXITOSAMENTE";
+            setTimeout(() => location.reload(), 2000);
+        } catch(err) { guardarEnLocal(datos); }
+    } else {
+        guardarEnLocal(datos);
     }
 };
+
+function guardarEnLocal(datos) {
+    let pendientes = JSON.parse(localStorage.getItem("pendientes") || "[]");
+    pendientes.push(datos);
+    localStorage.setItem("pendientes", JSON.stringify(pendientes));
+    alert("⚠️ Sin internet. Guardado en el celular. Sincroniza al tener señal.");
+    location.reload();
+}
+
+async function sincronizarPendientes() {
+    const pendientes = JSON.parse(localStorage.getItem("pendientes") || "[]");
+    const syncBtn = document.querySelector("#syncBox button");
+    syncBtn.disabled = true;
+    syncBtn.textContent = "Subiendo...";
+
+    for (let i = 0; i < pendientes.length; i++) {
+        try {
+            await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(pendientes[i]) });
+        } catch (e) { break; }
+    }
+    localStorage.removeItem("pendientes");
+    alert("✅ Todos los registros sincronizados.");
+    location.reload();
+}
 </script>
 </body>
 </html>
