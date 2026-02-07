@@ -154,10 +154,8 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw7YGL0nPg8PxoVPgKx
 let coords = "Buscando GPS...";
 let modoBusqueda = "historial";
 
-// GPS
 navigator.geolocation.getCurrentPosition(p => coords = `${p.coords.latitude},${p.coords.longitude}`);
 
-// Verificar si hay pendientes al cargar
 window.onload = () => {
     const pendientes = JSON.parse(localStorage.getItem("pendientes") || "[]");
     if(pendientes.length > 0) document.getElementById("syncBox").style.display = "block";
@@ -169,7 +167,7 @@ function cambiarTab(modo) {
     document.getElementById("tabCont").classList.toggle("active-tab", modo === 'controladores');
 }
 
-// BUSCADOR MEJORADO (No requiere dirección exacta)
+// BUSCADOR MEJORADO (Detecta y muestra Inventarios de Falla)
 async function ejecutarBusqueda() {
     const term = document.getElementById("txtBuscar").value.toLowerCase();
     const resDiv = document.getElementById("resultadosBusqueda");
@@ -181,16 +179,30 @@ async function ejecutarBusqueda() {
         const r = await fetch(`${WEB_APP_URL}?${q}`);
         const data = await r.json();
         resDiv.innerHTML = "";
-        if(data.length === 0) resDiv.innerHTML = "<div class='result-card'>❌ Sin coincidencias</div>";
+        if(data.length === 0) {
+            resDiv.innerHTML = "<div class='result-card'>❌ Sin coincidencias</div>";
+            return;
+        }
         data.forEach(item => {
+            const esFalla = item.tipo === "INVENTARIO_FALLA";
             resDiv.innerHTML += `
-                <div class="result-card">
+                <div class="result-card" style="${esFalla ? 'border-left: 5px solid #3b82f6;' : ''}">
+                    <div style="font-size: 0.7rem; font-weight: bold; color: ${esFalla ? '#3b82f6' : '#94a3b8'}; margin-bottom: 4px;">
+                        ${esFalla ? '⚠️ INVENTARIO DE FALLA' : '📝 REGISTRO'}
+                    </div>
                     <strong>${item.fecha || item.codigo}</strong><br>
                     ${item.direccion || item.tipo}<br>
                     <small>${item.tecnico || ''} - ${item.falla || ''}</small>
+                    ${esFalla ? `<button onclick="llenarArreglo('${item.direccion}')" style="width:100%; margin-top:8px; padding:5px; background:#059669; border:none; color:white; border-radius:4px; font-size:0.7rem; cursor:pointer;">ATENDER FALLA</button>` : ''}
                 </div>`;
         });
     } catch (e) { resDiv.innerHTML = "<div class='result-card'>⚠️ Requiere Internet</div>"; }
+}
+
+// Función auxiliar para facilitar el cierre de fallas desde el historial
+function llenarArreglo(dir) {
+    abrirForm('REPARACION');
+    document.getElementById("direccion").value = dir;
 }
 
 const diccionarioActividades = {
@@ -266,7 +278,6 @@ async function procesarFoto(file) {
     });
 }
 
-// LOGICA DE GUARDADO OFFLINE
 document.getElementById("mainForm").onsubmit = async e => {
     e.preventDefault();
     const btn = document.getElementById("btnGuardar");
