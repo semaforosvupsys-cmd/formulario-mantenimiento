@@ -37,6 +37,11 @@
         .check-item { display: flex; align-items: center; gap: 8px; background: #f1f5f9; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 0.75rem; color: #1e293b; font-weight: 500; }
         .check-item input[type="checkbox"] { width: 18px; height: 18px; margin: 0; cursor: pointer; }
         .img-preview { width: 100%; border-radius: 10px; margin-top: 10px; display: none; border: 2px solid #e2e8f0; }
+        
+        /* Estilo para los filtros de historial */
+        .filtro-box { display: flex; gap: 5px; margin-top: 10px; }
+        .btn-filtro { flex: 1; padding: 5px; font-size: 0.65rem; border-radius: 5px; border: 1px solid #475569; background: transparent; color: #94a3b8; cursor: pointer; }
+        .btn-filtro.active { background: #475569; color: white; border-color: #64748b; }
     </style>
 </head>
 <body>
@@ -71,6 +76,12 @@
             <input type="text" id="txtBuscar" placeholder="Ej: Calle 16 o VUP-102...">
             <button class="btn-search" onclick="ejecutarBusqueda()">BUSCAR</button>
         </div>
+        
+        <div id="filtrosHistorial" class="filtro-box" style="display: flex;">
+            <button class="btn-filtro active" onclick="filtrarResultados('todo', this)">TODOS</button>
+            <button class="btn-filtro" onclick="filtrarResultados('falla', this)">SOLO FALLAS</button>
+        </div>
+
         <div id="resultadosBusqueda"></div>
     </div>
   </div>
@@ -153,6 +164,7 @@
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw7YGL0nPg8PxoVPgKxWM4fzs2C538F3zJBfVIqsNXKfFfW9wUTCgk4yXvmOn3zzN0h/exec";
 let coords = "Buscando GPS...";
 let modoBusqueda = "historial";
+let datosCache = []; // Para filtrar sin volver a consultar la web
 
 navigator.geolocation.getCurrentPosition(p => coords = `${p.coords.latitude},${p.coords.longitude}`);
 
@@ -165,9 +177,9 @@ function cambiarTab(modo) {
     modoBusqueda = modo;
     document.getElementById("tabHist").classList.toggle("active-tab", modo === 'historial');
     document.getElementById("tabCont").classList.toggle("active-tab", modo === 'controladores');
+    document.getElementById("filtrosHistorial").style.display = (modo === 'historial') ? 'flex' : 'none';
 }
 
-// BUSCADOR MEJORADO (Detecta y muestra Inventarios de Falla)
 async function ejecutarBusqueda() {
     const term = document.getElementById("txtBuscar").value.toLowerCase();
     const resDiv = document.getElementById("resultadosBusqueda");
@@ -177,34 +189,52 @@ async function ejecutarBusqueda() {
     const q = modoBusqueda === 'historial' ? `buscar=${term}` : `getControladores=true&filtro=${term}`;
     try {
         const r = await fetch(`${WEB_APP_URL}?${q}`);
-        const data = await r.json();
-        resDiv.innerHTML = "";
-        if(data.length === 0) {
-            resDiv.innerHTML = "<div class='result-card'>❌ Sin coincidencias</div>";
-            return;
-        }
-        data.forEach(item => {
-            const esFalla = item.tipo === "INVENTARIO_FALLA";
-            resDiv.innerHTML += `
-                <div class="result-card" style="${esFalla ? 'border-left: 5px solid #3b82f6;' : ''}">
-                    <div style="font-size: 0.7rem; font-weight: bold; color: ${esFalla ? '#3b82f6' : '#94a3b8'}; margin-bottom: 4px;">
-                        ${esFalla ? '⚠️ INVENTARIO DE FALLA' : '📝 REGISTRO'}
-                    </div>
-                    <strong>${item.fecha || item.codigo}</strong><br>
-                    ${item.direccion || item.tipo}<br>
-                    <small>${item.tecnico || ''} - ${item.falla || ''}</small>
-                    ${esFalla ? `<button onclick="llenarArreglo('${item.direccion}')" style="width:100%; margin-top:8px; padding:5px; background:#059669; border:none; color:white; border-radius:4px; font-size:0.7rem; cursor:pointer;">ATENDER FALLA</button>` : ''}
-                </div>`;
-        });
+        datosCache = await r.json(); // Guardamos los datos para filtrar después
+        mostrarTarjetas(datosCache);
     } catch (e) { resDiv.innerHTML = "<div class='result-card'>⚠️ Requiere Internet</div>"; }
 }
 
-// Función auxiliar para facilitar el cierre de fallas desde el historial
+function mostrarTarjetas(data) {
+    const resDiv = document.getElementById("resultadosBusqueda");
+    resDiv.innerHTML = "";
+    if(data.length === 0) {
+        resDiv.innerHTML = "<div class='result-card'>❌ Sin coincidencias</div>";
+        return;
+    }
+    data.forEach(item => {
+        const esFalla = item.tipo === "INVENTARIO_FALLA";
+        resDiv.innerHTML += `
+            <div class="result-card" style="${esFalla ? 'border-left: 5px solid #3b82f6;' : ''}">
+                <div style="font-size: 0.7rem; font-weight: bold; color: ${esFalla ? '#3b82f6' : '#94a3b8'}; margin-bottom: 4px;">
+                    ${esFalla ? '⚠️ INVENTARIO DE FALLA' : '📝 REGISTRO'}
+                </div>
+                <strong>${item.fecha || item.codigo}</strong><br>
+                ${item.direccion || item.tipo}<br>
+                <small>${item.tecnico || ''} - ${item.falla || ''}</small>
+                ${esFalla ? `<button onclick="llenarArreglo('${item.direccion}')" style="width:100%; margin-top:8px; padding:8px; background:#059669; border:none; color:white; border-radius:8px; font-size:0.75rem; font-weight:bold; cursor:pointer;">🛠️ ATENDER AHORA</button>` : ''}
+            </div>`;
+    });
+}
+
+function filtrarResultados(filtro, btn) {
+    // Actualizar botones visualmente
+    document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    if(filtro === 'todo') {
+        mostrarTarjetas(datosCache);
+    } else {
+        const filtrados = datosCache.filter(item => item.tipo === "INVENTARIO_FALLA");
+        mostrarTarjetas(filtrados);
+    }
+}
+
 function llenarArreglo(dir) {
     abrirForm('REPARACION');
     document.getElementById("direccion").value = dir;
 }
 
+// --- RESTO DEL CÓDIGO (DICCIONARIOS, ABRIRFORM, ENVIAR) PERMANECE IGUAL ---
 const diccionarioActividades = {
     "Lampara Vehicular": ["Módulo LED", "Contador", "Limpieza"],
     "Lampara Peatonal": ["Módulo LED", "Limpieza"],
