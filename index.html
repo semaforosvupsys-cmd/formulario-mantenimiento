@@ -165,41 +165,59 @@ function cambiarTab(modo) {
     modoBusqueda = modo;
     document.getElementById("tabHist").classList.toggle("active-tab", modo === 'historial');
     document.getElementById("tabCont").classList.toggle("active-tab", modo === 'controladores');
+    document.getElementById("resultadosBusqueda").innerHTML = "";
 }
 
-// BUSCADOR MEJORADO (Detecta y muestra Inventarios de Falla)
+// BUSCADOR AJUSTADO PARA PENDIENTES ABIERTOS Y CONTROLADORES
 async function ejecutarBusqueda() {
     const term = document.getElementById("txtBuscar").value.toLowerCase();
     const resDiv = document.getElementById("resultadosBusqueda");
-    if(!term) return;
-    resDiv.innerHTML = "<div class='result-card'>⌛ Buscando...</div>";
     
-    const q = modoBusqueda === 'historial' ? `buscar=${term}` : `getControladores=true&filtro=${term}`;
+    resDiv.innerHTML = "<div class='result-card'>⌛ Consultando Base de Datos...</div>";
+    
+    // Si estamos en historial, pedimos los Pendientes Abiertos. Si no, Controladores.
+    const q = (modoBusqueda === 'historial') 
+        ? `getPendientesAbiertos=true&filtro=${encodeURIComponent(term)}` 
+        : `getControladores=true&filtro=${encodeURIComponent(term)}`;
+        
     try {
         const r = await fetch(`${WEB_APP_URL}?${q}`);
         const data = await r.json();
         resDiv.innerHTML = "";
-        if(data.length === 0) {
-            resDiv.innerHTML = "<div class='result-card'>❌ Sin coincidencias</div>";
+
+        if(!data || data.length === 0) {
+            resDiv.innerHTML = "<div class='result-card'>✅ Sin registros pendientes</div>";
             return;
         }
+
         data.forEach(item => {
-            const esFalla = item.tipo === "INVENTARIO_FALLA";
-            resDiv.innerHTML += `
-                <div class="result-card" style="${esFalla ? 'border-left: 5px solid #3b82f6;' : ''}">
-                    <div style="font-size: 0.7rem; font-weight: bold; color: ${esFalla ? '#3b82f6' : '#94a3b8'}; margin-bottom: 4px;">
-                        ${esFalla ? '⚠️ INVENTARIO DE FALLA' : '📝 REGISTRO'}
-                    </div>
-                    <strong>${item.fecha || item.codigo}</strong><br>
-                    ${item.direccion || item.tipo}<br>
-                    <small>${item.tecnico || ''} - ${item.falla || ''}</small>
-                    ${esFalla ? `<button onclick="llenarArreglo('${item.direccion}')" style="width:100%; margin-top:8px; padding:5px; background:#059669; border:none; color:white; border-radius:4px; font-size:0.7rem; cursor:pointer;">ATENDER FALLA</button>` : ''}
-                </div>`;
+            if(modoBusqueda === 'historial') {
+                resDiv.innerHTML += `
+                    <div class="result-card" style="border-left: 5px solid #ef4444; background: #1e293b; margin-bottom:10px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                            <span style="color:#ef4444; font-weight:bold; font-size:0.75rem;">⚠️ PENDIENTE</span>
+                            <small style="color:#94a3b8">${item.prioridad || ''}</small>
+                        </div>
+                        <strong style="font-size:1rem; color:white;">${item.direccion}</strong><br>
+                        <span style="color:#cbd5e1; font-size:0.8rem;">Falla: ${item.falla}</span><br>
+                        <small style="color:#94a3b8">Reportado: ${item.fecha}</small>
+                        <button onclick="llenarArreglo('${item.direccion}')" style="width:100%; margin-top:10px; padding:10px; background:#059669; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">
+                            🛠️ REGISTRAR ARREGLO
+                        </button>
+                    </div>`;
+            } else {
+                resDiv.innerHTML += `
+                    <div class="result-card" style="border-left: 5px solid #3b82f6;">
+                        <strong style="color:#3b82f6; font-size:1rem;">${item.codigo}</strong><br>
+                        <small style="color:#fff;">${item.direccion}</small>
+                    </div>`;
+            }
         });
-    } catch (e) { resDiv.innerHTML = "<div class='result-card'>⚠️ Requiere Internet</div>"; }
+    } catch (e) { 
+        resDiv.innerHTML = "<div class='result-card' style='border-left-color:#ef4444'>⚠️ Requiere Conexión</div>"; 
+    }
 }
 
-// Función auxiliar para facilitar el cierre de fallas desde el historial
 function llenarArreglo(dir) {
     abrirForm('REPARACION');
     document.getElementById("direccion").value = dir;
