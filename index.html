@@ -89,7 +89,19 @@
                 <option>Juan Bolaños</option><option>Jose Colmenares</option>
                 <option>William Orcasita</option>
             </select>
-            <div id="bloqueDireccion"><label>Ubicación / Código VUP</label><input type="text" id="direccion"></div>
+            
+            <div id="bloqueDireccion">
+                <label>Ubicación / Código VUP</label>
+                <input type="text" id="direccion" list="listaControladores" placeholder="Escriba o seleccione ubicación...">
+                <datalist id="listaControladores">
+                    <? if (typeof direccionesParaForm !== 'undefined') { ?>
+                      <? for (let i = 0; i < direccionesParaForm.length; i++) { ?>
+                        <option value="<?= direccionesParaForm[i] ?>">
+                      <? } ?>
+                    <? } ?>
+                </datalist>
+            </div>
+
             <div id="bloqueLaboratorio" style="display:none">
                 <label>Componente Reparado</label>
                 <select id="componenteReparado">
@@ -150,6 +162,7 @@
 </div>
 
 <script>
+// MANTENEMOS TODO TU SCRIPT EXACTAMENTE IGUAL
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw7YGL0nPg8PxoVPgKxWM4fzs2C538F3zJBfVIqsNXKfFfW9wUTCgk4yXvmOn3zzN0h/exec";
 let coords = "Buscando GPS...";
 let modoBusqueda = "historial";
@@ -168,14 +181,12 @@ function cambiarTab(modo) {
     document.getElementById("resultadosBusqueda").innerHTML = "";
 }
 
-// BUSCADOR AJUSTADO PARA PENDIENTES ABIERTOS Y CONTROLADORES
 async function ejecutarBusqueda() {
     const term = document.getElementById("txtBuscar").value.toLowerCase();
     const resDiv = document.getElementById("resultadosBusqueda");
     
     resDiv.innerHTML = "<div class='result-card'>⌛ Consultando Base de Datos...</div>";
     
-    // Si estamos en historial, pedimos los Pendientes Abiertos. Si no, Controladores.
     const q = (modoBusqueda === 'historial') 
         ? `getPendientesAbiertos=true&filtro=${encodeURIComponent(term)}` 
         : `getControladores=true&filtro=${encodeURIComponent(term)}`;
