@@ -92,14 +92,7 @@
             
             <div id="bloqueDireccion">
                 <label>Ubicación / Código VUP</label>
-                <input type="text" id="direccion" list="listaControladores" placeholder="Escriba o seleccione ubicación...">
-                <datalist id="listaControladores">
-                    <? if (typeof direccionesParaForm !== 'undefined') { ?>
-                      <? for (let i = 0; i < direccionesParaForm.length; i++) { ?>
-                        <option value="<?= direccionesParaForm[i] ?>">
-                      <? } ?>
-                    <? } ?>
-                </datalist>
+                <input type="text" id="direccion" placeholder="Ej: Cra 9 con Cll 16">
             </div>
 
             <div id="bloqueLaboratorio" style="display:none">
@@ -162,7 +155,7 @@
 </div>
 
 <script>
-// MANTENEMOS TODO TU SCRIPT EXACTAMENTE IGUAL
+// EL RESTO DEL SCRIPT SIGUE EXACTAMENTE IGUAL A TU VERSIÓN ORIGINAL
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw7YGL0nPg8PxoVPgKxWM4fzs2C538F3zJBfVIqsNXKfFfW9wUTCgk4yXvmOn3zzN0h/exec";
 let coords = "Buscando GPS...";
 let modoBusqueda = "historial";
