@@ -151,7 +151,7 @@
             <button type="submit" class="btn-send" id="btnGuardar">GUARDAR REGISTRO</button>
             <div id="msgStatus" style="text-align:center; margin-top:15px; font-weight:bold"></div>
         </form>
-    </div>
+  </div>
 </div>
 
 <script>
@@ -164,10 +164,17 @@ navigator.geolocation.getCurrentPosition(p => coords = `${p.coords.latitude},${p
 
 window.onload = () => {
     verificarPendientes();
-    // DETECTOR AUTOMÁTICO DE INTERNET
+    
+    // CENTINELA: Revisa conexión cada 30 segundos y dispara sincronización
+    setInterval(() => {
+        if (navigator.onLine && !sincronizando) {
+            const pends = JSON.parse(localStorage.getItem("pendientes") || "[]");
+            if (pends.length > 0) sincronizarPendientes();
+        }
+    }, 30000);
+
     window.addEventListener('online', () => {
-        console.log("Conexión restaurada. Sincronizando...");
-        sincronizarPendientes();
+        if(!sincronizando) sincronizarPendientes();
     });
 };
 
@@ -176,7 +183,7 @@ function verificarPendientes() {
     const syncBox = document.getElementById("syncBox");
     if(pendientes.length > 0) {
         syncBox.style.display = "block";
-        syncBox.style.background = "#ef4444"; // Rojo si hay pendientes
+        syncBox.style.background = "#ef4444"; 
         document.getElementById("syncText").textContent = `⚠️ Tienes ${pendientes.length} reportes sin subir`;
     } else {
         syncBox.style.display = "none";
@@ -193,61 +200,31 @@ function cambiarTab(modo) {
 async function ejecutarBusqueda() {
     const term = document.getElementById("txtBuscar").value.toLowerCase();
     const resDiv = document.getElementById("resultadosBusqueda");
-    resDiv.innerHTML = "<div class='result-card'>⌛ Consultando Base de Datos...</div>";
-    
-    const q = (modoBusqueda === 'historial') 
-        ? `getPendientesAbiertos=true&filtro=${encodeURIComponent(term)}` 
-        : `getControladores=true&filtro=${encodeURIComponent(term)}`;
-        
+    resDiv.innerHTML = "<div class='result-card'>⌛ Consultando...</div>";
+    const q = (modoBusqueda === 'historial') ? `getPendientesAbiertos=true&filtro=${encodeURIComponent(term)}` : `getControladores=true&filtro=${encodeURIComponent(term)}`;
     try {
         const r = await fetch(`${WEB_APP_URL}?${q}`);
         const data = await r.json();
         resDiv.innerHTML = "";
-        if(!data || data.length === 0) {
-            resDiv.innerHTML = "<div class='result-card'>✅ Sin registros pendientes</div>";
-            return;
-        }
+        if(!data || data.length === 0) { resDiv.innerHTML = "<div class='result-card'>✅ Sin pendientes</div>"; return; }
         data.forEach(item => {
             if(modoBusqueda === 'historial') {
-                resDiv.innerHTML += `
-                    <div class="result-card" style="border-left: 5px solid #ef4444; background: #1e293b; margin-bottom:10px;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                            <span style="color:#ef4444; font-weight:bold; font-size:0.75rem;">⚠️ PENDIENTE</span>
-                            <small style="color:#94a3b8">${item.prioridad || ''}</small>
-                        </div>
-                        <strong style="font-size:1rem; color:white;">${item.direccion}</strong><br>
-                        <span style="color:#cbd5e1; font-size:0.8rem;">Falla: ${item.falla}</span><br>
-                        <small style="color:#94a3b8">Reportado: ${item.fecha}</small>
-                        <button onclick="llenarArreglo('${item.direccion}')" style="width:100%; margin-top:10px; padding:10px; background:#059669; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">
-                            🛠️ REGISTRAR ARREGLO
-                        </button>
-                    </div>`;
+                resDiv.innerHTML += `<div class="result-card" style="border-left: 5px solid #ef4444; background: #1e293b; margin-bottom:10px;">
+                    <strong style="color:white;">${item.direccion}</strong><br><small style="color:#cbd5e1;">Falla: ${item.falla}</small><br>
+                    <button onclick="llenarArreglo('${item.direccion}')" style="width:100%; margin-top:10px; padding:10px; background:#059669; color:white; border:none; border-radius:8px; font-weight:bold;">🛠️ ARREGLAR</button></div>`;
             } else {
-                resDiv.innerHTML += `
-                    <div class="result-card" style="border-left: 5px solid #3b82f6;">
-                        <strong style="color:#3b82f6; font-size:1rem;">${item.codigo}</strong><br>
-                        <small style="color:#fff;">${item.direccion}</small>
-                    </div>`;
+                resDiv.innerHTML += `<div class="result-card" style="border-left: 5px solid #3b82f6;"><strong style="color:#3b82f6;">${item.codigo}</strong><br><small style="color:#fff;">${item.direccion}</small></div>`;
             }
         });
-    } catch (e) { 
-        resDiv.innerHTML = "<div class='result-card' style='border-left-color:#ef4444'>⚠️ Requiere Conexión</div>"; 
-    }
+    } catch (e) { resDiv.innerHTML = "<div class='result-card' style='border-left-color:#ef4444'>⚠️ Error de conexión</div>"; }
 }
 
-function llenarArreglo(dir) {
-    abrirForm('REPARACION');
-    document.getElementById("direccion").value = dir;
-}
+function llenarArreglo(dir) { abrirForm('REPARACION'); document.getElementById("direccion").value = dir; }
 
 const diccionarioActividades = {
-    "Lampara Vehicular": ["Módulo LED", "Limpieza"],
-    "Lampara Peatonal": ["Módulo LED", "Limpieza"],
-    "Contador": ["Módulo LED", "Limpieza"],
-    "Semaforo Vehicular": ["Estructural", "Bases", "Visera" ,"Limpieza"],
-    "Semaforo Peatonal": ["Estructural", "Bases", "Visera", "Limpieza"],
-    "Semaforo de piso": ["Mantenimiento LED", "Policarbonato", "Resina"],
-    "Cableado": ["Vehicular", "Peatonal", "Acometida"],
+    "Lampara Vehicular": ["Módulo LED", "Limpieza"], "Lampara Peatonal": ["Módulo LED", "Limpieza"], "Contador": ["Módulo LED", "Limpieza"],
+    "Semaforo Vehicular": ["Estructural", "Bases", "Visera" ,"Limpieza"], "Semaforo Peatonal": ["Estructural", "Bases", "Visera", "Limpieza"],
+    "Semaforo de piso": ["Mantenimiento LED", "Policarbonato", "Resina"], "Cableado": ["Vehicular", "Peatonal", "Acometida"],
     "Controlador": ["Tarjetas", "Reinicio", "Breaker", "Modem", "Timer o Ventilador", "UPS", "Fusible", "Polo Tierra"],
     "Estructural": ["Poste T1/T2", "Anclaje", "Tornillería", "Tapa Registro", "Pintura", "Reja", "Pedestal Control"],
     "Radar de Velocidad": ["Baterías", "Panel Solar", "Panel de Control", "Controlador"]
@@ -257,9 +234,7 @@ document.getElementById("falla").onchange = (e) => {
     const actSel = document.getElementById("actividad");
     actSel.innerHTML = "<option value=''>Seleccione Actividad</option>";
     if(diccionarioActividades[e.target.value]) {
-        diccionarioActividades[e.target.value].forEach(a => {
-            let o = document.createElement("option"); o.value = o.textContent = a; actSel.appendChild(o);
-        });
+        diccionarioActividades[e.target.value].forEach(a => { let o = document.createElement("option"); o.value = o.textContent = a; actSel.appendChild(o); });
     }
 };
 
@@ -279,10 +254,7 @@ function abrirForm(tipo) {
     btn.style.background = (tipo === "PREVENTIVO") ? "#8b5cf6" : (tipo === "LABORATORIO") ? "#f59e0b" : "#0f172a";
 }
 
-function irAlMenu() {
-    document.getElementById("pantallaForm").classList.remove("active-form");
-    document.getElementById("menuPrincipal").style.display = "block";
-}
+function irAlMenu() { document.getElementById("pantallaForm").classList.remove("active-form"); document.getElementById("menuPrincipal").style.display = "block"; }
 
 function preview(input, id) {
     if (input.files && input.files[0]) {
@@ -298,14 +270,11 @@ async function procesarFoto(file) {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = e => {
-            const img = new Image();
-            img.src = e.target.result;
+            const img = new Image(); img.src = e.target.result;
             img.onload = () => {
                 const canvas = document.createElement("canvas");
-                const MAX = 800;
-                let w = img.width, h = img.height;
-                if (w > h && w > MAX) { h *= MAX/w; w = MAX; }
-                else if (h > MAX) { w *= MAX/h; h = MAX; }
+                const MAX = 800; let w = img.width, h = img.height;
+                if (w > h && w > MAX) { h *= MAX/w; w = MAX; } else if (h > MAX) { w *= MAX/h; h = MAX; }
                 canvas.width = w; canvas.height = h;
                 canvas.getContext("2d").drawImage(img, 0, 0, w, h);
                 res(canvas.toDataURL("image/jpeg", 0.6).split(",")[1]);
@@ -318,39 +287,33 @@ document.getElementById("mainForm").onsubmit = async e => {
     e.preventDefault();
     const btn = document.getElementById("btnGuardar");
     const msg = document.getElementById("msgStatus");
+    btn.disabled = true; msg.textContent = "⏳ Procesando...";
     const tipo = document.getElementById("tipoRegistro").value;
-    btn.disabled = true;
-    msg.textContent = "⏳ Procesando...";
 
-    let actividadFinal = document.getElementById("actividad").value;
-    let fallaFinal = document.getElementById("falla").value;
-    let direccionFinal = document.getElementById("direccion").value;
+    let act = document.getElementById("actividad").value;
+    let fal = document.getElementById("falla").value;
+    let dir = document.getElementById("direccion").value;
 
     if(tipo === "LABORATORIO") {
-        fallaFinal = document.getElementById("componenteReparado").value;
-        actividadFinal = Array.from(document.querySelectorAll('.chk-lab:checked')).map(cb => cb.value).join(', ');
-        direccionFinal = "Taller"; 
+        fal = document.getElementById("componenteReparado").value;
+        act = Array.from(document.querySelectorAll('.chk-lab:checked')).map(cb => cb.value).join(', ');
+        dir = "Taller"; 
     } else if(tipo === "PREVENTIVO") {
-        actividadFinal = Array.from(document.querySelectorAll('.chk-prev:checked')).map(cb => cb.value).join(', ');
+        act = Array.from(document.querySelectorAll('.chk-prev:checked')).map(cb => cb.value).join(', ');
     }
 
     const datos = {
-        id: "VUP-" + Date.now(),
-        tipo: tipo,
-        fecha: document.getElementById("fecha").value,
-        tecnico: document.getElementById("tecnico").value,
-        direccion: direccionFinal,
-        falla: fallaFinal,
-        actividad: actividadFinal,
-        prioridad: document.getElementById("prioridad").value,
-        observaciones: document.getElementById("observaciones").value,
-        coords: coords,
+        id: "VUP-" + Date.now(), tipo: tipo, fecha: document.getElementById("fecha").value,
+        tecnico: document.getElementById("tecnico").value, direccion: dir, falla: fal,
+        actividad: act, prioridad: document.getElementById("prioridad").value,
+        observaciones: document.getElementById("observaciones").value, coords: coords,
         foto1: await procesarFoto(document.getElementById("foto1").files[0]),
         foto2: await procesarFoto(document.getElementById("foto2").files[0])
     };
 
     if (navigator.onLine) {
-        enviarAlServidor(datos, true);
+        const exito = await enviarAlServidor(datos, true);
+        if(!exito) guardarEnLocal(datos);
     } else {
         guardarEnLocal(datos);
     }
@@ -359,55 +322,54 @@ document.getElementById("mainForm").onsubmit = async e => {
 async function enviarAlServidor(datos, esIndividual) {
     const msg = document.getElementById("msgStatus");
     try {
-        await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(datos) });
-        if(esIndividual) {
-            msg.innerHTML = "✅ ENVIADO EXITOSAMENTE";
-            setTimeout(() => location.reload(), 2000);
-        }
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(datos), signal: controller.signal });
+        clearTimeout(timeoutId);
+        if(esIndividual) { msg.innerHTML = "✅ ENVIADO EXITOSAMENTE"; setTimeout(() => location.reload(), 2000); }
         return true;
-    } catch(err) {
-        if(esIndividual) guardarEnLocal(datos);
-        return false;
-    }
+    } catch(err) { return false; }
 }
 
 function guardarEnLocal(datos) {
-    let pendientes = JSON.parse(localStorage.getItem("pendientes") || "[]");
-    pendientes.push(datos);
-    localStorage.setItem("pendientes", JSON.stringify(pendientes));
-    alert("📍 Sin internet. El reporte se guardó en el celular y se subirá solo cuando tengas señal.");
+    let pends = JSON.parse(localStorage.getItem("pendientes") || "[]");
+    pends.push(datos);
+    localStorage.setItem("pendientes", JSON.stringify(pends));
+    alert("📍 Guardado localmente. Se subirá solo cuando haya buena señal.");
     location.reload();
 }
 
 async function sincronizarPendientes() {
     if(sincronizando) return;
-    const pendientes = JSON.parse(localStorage.getItem("pendientes") || "[]");
-    if(pendientes.length === 0) return;
+    let pends = JSON.parse(localStorage.getItem("pendientes") || "[]");
+    if(pends.length === 0) return;
 
     sincronizando = true;
     const syncBox = document.getElementById("syncBox");
     const syncText = document.getElementById("syncText");
     const syncBtn = document.getElementById("btnSyncManual");
 
-    syncBox.style.background = "#f59e0b"; // Naranja durante sincronización
-    syncBtn.disabled = true;
+    syncBox.style.background = "#f59e0b"; 
+    syncBtn.disabled = true; syncBtn.textContent = "Subiendo...";
     
-    let subidos = 0;
-    for (let i = 0; i < pendientes.length; i++) {
-        syncText.textContent = `⏳ Subiendo ${i+1} de ${pendientes.length}...`;
-        const exito = await enviarAlServidor(pendientes[i], false);
-        if(exito) subidos++;
+    let subidosIds = [];
+    for (let i = 0; i < pends.length; i++) {
+        syncText.textContent = `⏳ Autosincronizando ${i+1} de ${pends.length}...`;
+        const ok = await enviarAlServidor(pends[i], false);
+        if(ok) subidosIds.push(pends[i].id); else break;
     }
 
-    // Limpiar solo los que se subieron (en este caso limpiamos todo por simplicidad)
-    localStorage.removeItem("pendientes");
-    
-    syncBox.style.background = "#059669"; // Verde éxito
-    syncText.textContent = "✅ ¡Sincronización completa!";
-    setTimeout(() => {
+    const restantes = pends.filter(p => !subidosIds.includes(p.id));
+    localStorage.setItem("pendientes", JSON.stringify(restantes));
+
+    if(restantes.length === 0) {
+        syncBox.style.background = "#059669";
+        syncText.textContent = "✅ ¡Sincronizado!";
+        setTimeout(() => { verificarPendientes(); sincronizando = false; }, 3000);
+    } else {
         verificarPendientes();
         sincronizando = false;
-    }, 3000);
+    }
 }
 </script>
 </body>
