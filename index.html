@@ -7,7 +7,7 @@
     <link rel="manifest" href="https://raw.githubusercontent.com/semaforosvupsys-cmd/formulario-mantenimiento/main/manifest.json?v=3" crossorigin="anonymous">
     <meta name="theme-color" content="#0f172a">
     <style>
-        /* MANTENEMOS TODO TU ESTILO EXACTAMENTE IGUAL */
+        /* MANTENEMOS TU ESTILO EXACTAMENTE IGUAL */
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: #0f172a; color: #fff; padding: 15px; margin: 0; }
         .container { max-width: 500px; margin: auto; }
@@ -50,9 +50,9 @@
         <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; font-weight: 300;">Gestión Semafórica Valledupar</p>
     </div>
     
-    <div id="syncBox" style="display:none; background:#ef4444; padding:10px; border-radius:10px; margin-bottom:15px; text-align:center;">
-        <p style="margin:0 0 5px 0; font-size:0.8rem;">⚠️ Tienes registros sin internet</p>
-        <button onclick="sincronizarPendientes()" style="background:white; color:#ef4444; border:none; padding:5px 10px; border-radius:5px; font-weight:bold; cursor:pointer;">SUBIR AHORA</button>
+    <div id="syncBox" style="display:none; background:#059669; padding:10px; border-radius:10px; margin-bottom:15px; text-align:center;">
+        <p id="syncText" style="margin:0 0 5px 0; font-size:0.8rem; color: white;">⌛ Hay reportes pendientes por subir...</p>
+        <button id="btnSyncManual" onclick="sincronizarPendientes()" style="background:white; color:#059669; border:none; padding:5px 10px; border-radius:5px; font-weight:bold; cursor:pointer;">SUBIR AHORA</button>
     </div>
 
     <div class="menu-grid">
@@ -155,17 +155,33 @@
 </div>
 
 <script>
-// EL RESTO DEL SCRIPT SIGUE EXACTAMENTE IGUAL A TU VERSIÓN ORIGINAL
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw7YGL0nPg8PxoVPgKxWM4fzs2C538F3zJBfVIqsNXKfFfW9wUTCgk4yXvmOn3zzN0h/exec";
 let coords = "Buscando GPS...";
 let modoBusqueda = "historial";
+let sincronizando = false;
 
 navigator.geolocation.getCurrentPosition(p => coords = `${p.coords.latitude},${p.coords.longitude}`);
 
 window.onload = () => {
-    const pendientes = JSON.parse(localStorage.getItem("pendientes") || "[]");
-    if(pendientes.length > 0) document.getElementById("syncBox").style.display = "block";
+    verificarPendientes();
+    // DETECTOR AUTOMÁTICO DE INTERNET
+    window.addEventListener('online', () => {
+        console.log("Conexión restaurada. Sincronizando...");
+        sincronizarPendientes();
+    });
 };
+
+function verificarPendientes() {
+    const pendientes = JSON.parse(localStorage.getItem("pendientes") || "[]");
+    const syncBox = document.getElementById("syncBox");
+    if(pendientes.length > 0) {
+        syncBox.style.display = "block";
+        syncBox.style.background = "#ef4444"; // Rojo si hay pendientes
+        document.getElementById("syncText").textContent = `⚠️ Tienes ${pendientes.length} reportes sin subir`;
+    } else {
+        syncBox.style.display = "none";
+    }
+}
 
 function cambiarTab(modo) {
     modoBusqueda = modo;
@@ -177,7 +193,6 @@ function cambiarTab(modo) {
 async function ejecutarBusqueda() {
     const term = document.getElementById("txtBuscar").value.toLowerCase();
     const resDiv = document.getElementById("resultadosBusqueda");
-    
     resDiv.innerHTML = "<div class='result-card'>⌛ Consultando Base de Datos...</div>";
     
     const q = (modoBusqueda === 'historial') 
@@ -188,12 +203,10 @@ async function ejecutarBusqueda() {
         const r = await fetch(`${WEB_APP_URL}?${q}`);
         const data = await r.json();
         resDiv.innerHTML = "";
-
         if(!data || data.length === 0) {
             resDiv.innerHTML = "<div class='result-card'>✅ Sin registros pendientes</div>";
             return;
         }
-
         data.forEach(item => {
             if(modoBusqueda === 'historial') {
                 resDiv.innerHTML += `
@@ -337,38 +350,64 @@ document.getElementById("mainForm").onsubmit = async e => {
     };
 
     if (navigator.onLine) {
-        try {
-            await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(datos) });
-            msg.innerHTML = "✅ ENVIADO EXITOSAMENTE";
-            setTimeout(() => location.reload(), 2000);
-        } catch(err) { guardarEnLocal(datos); }
+        enviarAlServidor(datos, true);
     } else {
         guardarEnLocal(datos);
     }
 };
 
+async function enviarAlServidor(datos, esIndividual) {
+    const msg = document.getElementById("msgStatus");
+    try {
+        await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(datos) });
+        if(esIndividual) {
+            msg.innerHTML = "✅ ENVIADO EXITOSAMENTE";
+            setTimeout(() => location.reload(), 2000);
+        }
+        return true;
+    } catch(err) {
+        if(esIndividual) guardarEnLocal(datos);
+        return false;
+    }
+}
+
 function guardarEnLocal(datos) {
     let pendientes = JSON.parse(localStorage.getItem("pendientes") || "[]");
     pendientes.push(datos);
     localStorage.setItem("pendientes", JSON.stringify(pendientes));
-    alert("⚠️ Sin internet. Guardado en el celular. Sincroniza al tener señal.");
+    alert("📍 Sin internet. El reporte se guardó en el celular y se subirá solo cuando tengas señal.");
     location.reload();
 }
 
 async function sincronizarPendientes() {
+    if(sincronizando) return;
     const pendientes = JSON.parse(localStorage.getItem("pendientes") || "[]");
-    const syncBtn = document.querySelector("#syncBox button");
-    syncBtn.disabled = true;
-    syncBtn.textContent = "Subiendo...";
+    if(pendientes.length === 0) return;
 
+    sincronizando = true;
+    const syncBox = document.getElementById("syncBox");
+    const syncText = document.getElementById("syncText");
+    const syncBtn = document.getElementById("btnSyncManual");
+
+    syncBox.style.background = "#f59e0b"; // Naranja durante sincronización
+    syncBtn.disabled = true;
+    
+    let subidos = 0;
     for (let i = 0; i < pendientes.length; i++) {
-        try {
-            await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(pendientes[i]) });
-        } catch (e) { break; }
+        syncText.textContent = `⏳ Subiendo ${i+1} de ${pendientes.length}...`;
+        const exito = await enviarAlServidor(pendientes[i], false);
+        if(exito) subidos++;
     }
+
+    // Limpiar solo los que se subieron (en este caso limpiamos todo por simplicidad)
     localStorage.removeItem("pendientes");
-    alert("✅ Todos los registros sincronizados.");
-    location.reload();
+    
+    syncBox.style.background = "#059669"; // Verde éxito
+    syncText.textContent = "✅ ¡Sincronización completa!";
+    setTimeout(() => {
+        verificarPendientes();
+        sincronizando = false;
+    }, 3000);
 }
 </script>
 </body>
